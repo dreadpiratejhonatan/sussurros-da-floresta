@@ -16,7 +16,7 @@ npm run start:win
 # ou: npm start  → http://127.0.0.1:5175/
 ```
 
-Fluxo: splash (libera trilha) → Albert → dificuldade → explorar **5 mistérios**, ler lore, observar espíritos (E).
+Fluxo: splash → Albert (único jogável) → dificuldade → **5 mistérios**, lore, espíritos e **NPCs históricos** de Cananéia / exploração (E).
 
 | Tecla | Ação |
 | --- | --- |
@@ -28,7 +28,8 @@ Fluxo: splash (libera trilha) → Albert → dificuldade → explorar **5 misté
 
 ## Personagem
 
-**Albert** — protagonista (foto): óculos pretos, barba, jaqueta azul com zíper laranja, camiseta navy e mochila.
+**Albert** — único jogável (foto): óculos de grau, barba, jaqueta azul com zíper laranja, mochila.  
+**NPCs** — Carijó a cavalo, Bacharel de Cananéia, Vespúcio, Martim Afonso, anciã da costa, Espírito do Peabiru (aparecem aleatoriamente).
 
 ### Adicionar personagem (quando quiser mais skins)
 

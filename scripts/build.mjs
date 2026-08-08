@@ -9,7 +9,7 @@ import { execSync } from "node:child_process";
 process.chdir(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
 const DIST = "dist";
 const HOST = path.join("release", "hostgator-spirit");
-const CACHE = "b011";
+const CACHE = "b012";
 
 /** Arquivos de dados vivos no servidor — nunca clobber no pacote HostGator. */
 const PRESERVE_DATA = new Set([

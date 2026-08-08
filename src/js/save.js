@@ -6,6 +6,7 @@ const defaultData = () => ({
   solved: {},
   lore: {},
   animals: {},
+  npcs: {},
   bestTimeSec: null,
   runs: 0,
 });
@@ -27,6 +28,7 @@ export class Save {
         solved: { ...parsed.solved },
         lore: { ...parsed.lore },
         animals: { ...parsed.animals },
+        npcs: { ...parsed.npcs },
       };
     } catch {
       this.data = defaultData();
@@ -76,10 +78,24 @@ export class Save {
     return ids.filter((id) => this.data.animals[id]).length;
   }
 
+  heardNpc(id) {
+    return !!this.data.npcs[id];
+  }
+
+  markNpc(id) {
+    this.data.npcs[id] = true;
+    this.persist();
+  }
+
+  npcCount(ids) {
+    return ids.filter((id) => this.data.npcs[id]).length;
+  }
+
   resetRunProgress() {
     this.data.solved = {};
     this.data.lore = {};
     this.data.animals = {};
+    this.data.npcs = {};
     this.persist();
   }
 }

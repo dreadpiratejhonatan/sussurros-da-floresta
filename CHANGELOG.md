@@ -1,5 +1,13 @@
 # Changelog
 
+## b012 — 2026-08-08
+
+- Enredo ampliado: Cananéia e a exploração da América do Sul
+- 6 NPCs históricos/míticos (só Albert é jogável): Carijó a cavalo, Bacharel, Vespúcio, Martim Afonso, anciã, Espírito do Peabiru
+- NPCs surgem aleatoriamente; interação (E) revela fatos históricos
+- HUD «Crônicas»; tema/splash atualizados
+- Cache `b012`
+
 ## b011 — 2026-08-08
 
 - Estações do ano (primavera → verão → outono → inverno) com cores e clima próprios
