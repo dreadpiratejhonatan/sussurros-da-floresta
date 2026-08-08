@@ -2,6 +2,13 @@ import * as THREE from "three";
 import { CONFIG } from "./config.js";
 import { animateAvatar, buildAvatar } from "./skins.js";
 
+function shortestAngleDelta(from, to) {
+  let d = to - from;
+  while (d > Math.PI) d -= Math.PI * 2;
+  while (d < -Math.PI) d += Math.PI * 2;
+  return d;
+}
+
 export class Player {
   constructor(camera, world, skinId = "albert") {
     this.camera = camera;
@@ -15,11 +22,15 @@ export class Player {
     this.moveMult = 1;
     this.avatar = buildAvatar(skinId);
     this.avatar.visible = true;
+    // Face +Z in mesh space; yaw+π so third-person camera sees Albert's back
+    this._bodyYaw = this.yaw + Math.PI;
+    this.avatar.rotation.y = this._bodyYaw;
     world.scene.add(this.avatar);
     this._fwd = new THREE.Vector3();
     this._right = new THREE.Vector3();
     this._camOffset = new THREE.Vector3();
     this._lookTarget = new THREE.Vector3();
+    this._wish = new THREE.Vector3();
     this._moving = false;
     this._sprint = false;
   }
@@ -28,6 +39,7 @@ export class Player {
     this.world.scene.remove(this.avatar);
     this.avatar = buildAvatar(skinId);
     this.avatar.visible = true;
+    this.avatar.rotation.y = this._bodyYaw;
     if (this.mode === "first") this._setFirstPersonBodyVisible(false);
     this.world.scene.add(this.avatar);
   }
@@ -66,6 +78,8 @@ export class Player {
     this.pos.set(0, CONFIG.eyeHeight, 10);
     this.velY = 0;
     this.mode = "third";
+    this._bodyYaw = this.yaw + Math.PI;
+    this.avatar.rotation.y = this._bodyYaw;
     this.avatar.visible = true;
     this._setFirstPersonBodyVisible(true);
     this._applyCamera();
@@ -83,14 +97,15 @@ export class Player {
     const mv = input.moveVector();
     this._sprint = !!mv.sprint;
     let speed = CONFIG.moveSpeed * this.moveMult * (mv.sprint ? CONFIG.sprintMult : 1);
-    const wish = new THREE.Vector3()
+    this._wish
+      .set(0, 0, 0)
       .addScaledVector(this._right, mv.x)
       .addScaledVector(this._fwd, -mv.z);
-    this._moving = wish.lengthSq() > 0;
-    if (this._moving) wish.normalize().multiplyScalar(speed * dt);
+    this._moving = this._wish.lengthSq() > 0;
+    if (this._moving) this._wish.normalize().multiplyScalar(speed * dt);
 
-    let nx = this.pos.x + wish.x;
-    let nz = this.pos.z + wish.z;
+    let nx = this.pos.x + this._wish.x;
+    let nz = this.pos.z + this._wish.z;
     if (!this.world.blocked(nx, this.pos.z, CONFIG.playerRadius)) this.pos.x = nx;
     if (!this.world.blocked(this.pos.x, nz, CONFIG.playerRadius)) this.pos.z = nz;
 
@@ -110,8 +125,15 @@ export class Player {
       this.onGround = false;
     }
 
+    // Face walk direction (not the camera) so Albert stops moonwalking
+    let targetBody = this.yaw + Math.PI;
+    if (this._moving) {
+      targetBody = Math.atan2(this._wish.x, this._wish.z);
+    }
+    const turnSpeed = this._moving ? 12 : 7;
+    this._bodyYaw += shortestAngleDelta(this._bodyYaw, targetBody) * Math.min(1, dt * turnSpeed);
     this.avatar.position.set(this.pos.x, this.pos.y - CONFIG.eyeHeight, this.pos.z);
-    this.avatar.rotation.y = this.yaw;
+    this.avatar.rotation.y = this._bodyYaw;
     animateAvatar(this.avatar, dt, this._moving, this._sprint);
     this._applyCamera();
   }

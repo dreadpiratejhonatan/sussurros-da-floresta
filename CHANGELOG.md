@@ -1,5 +1,13 @@
 # Changelog
 
+## b007 — 2026-08-08
+
+- Albert deixa de caminhar de costas: corpo vira na direção do movimento
+- Skin limpa (sem coroa de espinhos / glow tech); bolsa no quadril
+- Áudio da mata: passos, pássaros, uivo de lobo, coruja, rio por proximidade
+- Look touch mais responsivo; master um pouco mais alto
+- Cache `b007`
+
 ## b006 — 2026-08-08
 
 - Skin do Albert atualizada para teste de produção: pele cobre, manto verde-musgo, pintura de argila, coroa de penas, amuleto âmbar
