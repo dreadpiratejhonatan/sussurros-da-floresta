@@ -1,4 +1,4 @@
-/** Gera faces/albert.png 256×256 (NEAREST-friendly pixel art). */
+/** Gera faces/albert.png 256×256 — traços humanos / indígenas, sem óculos tech. */
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -40,31 +40,27 @@ const fill = (x0, y0, x1, y1, r, g, b, a = 255) => {
   for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) set(x, y, r, g, b, a);
 };
 
-// transparent bg
 fill(0, 0, W, H, 0, 0, 0, 0);
-// face skin
-fill(48, 40, 208, 230, 107, 63, 42);
-// hair
-fill(48, 40, 208, 78, 42, 26, 16);
+// skin
+fill(52, 44, 204, 228, 118, 72, 48);
+// hair fringe
+fill(52, 44, 204, 86, 28, 16, 10);
 // brows
-fill(70, 100, 118, 112, 40, 24, 14);
-fill(138, 100, 186, 112, 40, 24, 14);
-// eyes
-fill(78, 118, 110, 138, 20, 20, 20);
-fill(146, 118, 178, 138, 20, 20, 20);
-fill(86, 124, 102, 134, 110, 200, 255); // tech lens tint
-fill(154, 124, 170, 134, 110, 200, 255);
-// glasses frame
-fill(66, 114, 190, 120, 18, 18, 18);
-fill(66, 114, 72, 142, 18, 18, 18);
-fill(184, 114, 190, 142, 18, 18, 18);
-fill(110, 124, 146, 130, 18, 18, 18);
+fill(74, 104, 116, 116, 36, 22, 14);
+fill(140, 104, 182, 116, 36, 22, 14);
+// eyes — warm dark, no cyan lenses
+fill(82, 120, 108, 140, 28, 18, 12);
+fill(148, 120, 174, 140, 28, 18, 12);
+fill(90, 128, 102, 136, 90, 160, 110); // soft green iris hint
+fill(156, 128, 168, 136, 90, 160, 110);
 // nose
-fill(118, 140, 138, 168, 90, 52, 34);
+fill(118, 142, 138, 172, 95, 55, 36);
 // mouth
-fill(100, 186, 156, 196, 70, 40, 30);
-// cheek tech tattoo / glyph
-fill(58, 150, 78, 170, 110, 200, 255, 180);
+fill(104, 188, 152, 198, 80, 45, 32);
+// ochre face paint marks (ancestral, not tech)
+fill(60, 148, 78, 168, 184, 106, 42, 200);
+fill(178, 148, 196, 168, 184, 106, 42, 200);
+fill(118, 96, 138, 108, 184, 106, 42, 160);
 
 const raw = Buffer.alloc((W * 4 + 1) * H);
 for (let y = 0; y < H; y++) {
@@ -77,9 +73,6 @@ ihdr.writeUInt32BE(W, 0);
 ihdr.writeUInt32BE(H, 4);
 ihdr[8] = 8;
 ihdr[9] = 6;
-ihdr[10] = 0;
-ihdr[11] = 0;
-ihdr[12] = 0;
 
 const png = Buffer.concat([
   Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),

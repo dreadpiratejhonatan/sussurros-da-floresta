@@ -23,25 +23,27 @@ function loadFaceTexture(url) {
   return tex;
 }
 
-function mat(color, { roughness = 0.7, metalness = 0.1, emissive = 0x000000, emissiveIntensity = 0 } = {}) {
+function mat(color, opts = {}) {
   return new THREE.MeshStandardMaterial({
     color,
-    roughness,
-    metalness,
-    emissive,
-    emissiveIntensity,
+    roughness: opts.roughness ?? 0.85,
+    metalness: opts.metalness ?? 0.05,
+    emissive: opts.emissive ?? 0x000000,
+    emissiveIntensity: opts.emissiveIntensity ?? 0,
+    transparent: opts.transparent ?? false,
+    opacity: opts.opacity ?? 1,
   });
 }
 
-function addShadow(mesh, on) {
+function shadowed(mesh, on) {
   mesh.castShadow = on;
   mesh.receiveShadow = on;
   return mesh;
 }
 
 /**
- * Albert — humanoid 3D: pele morena, traços indígenas, traje tech + gadgets.
- * Exposed joints for walk cycle: leftLeg, rightLeg, leftArm, rightArm.
+ * Albert — guia da mata / primeiros povos.
+ * Pele morena, traje de fibras e couro, trança, amuleto — sem visual cyber.
  */
 export function buildAvatar(skinId, { castShadow = true } = {}) {
   const skin = getSkin(skinId);
@@ -49,224 +51,183 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   root.name = `avatar-${skin.id}`;
 
   const skinTone = new THREE.Color(skin.skin);
-  const suit = new THREE.Color(skin.suit);
-  const shirt = new THREE.Color(skin.shirt);
-  const accent = new THREE.Color(skin.accent);
+  const cloth = new THREE.Color(skin.suit);
+  const wrap = new THREE.Color(skin.shirt);
+  const spirit = new THREE.Color(skin.accent);
 
-  const skinMat = mat(skinTone, { roughness: 0.78 });
-  const suitMat = mat(suit, { roughness: 0.45, metalness: 0.42 });
-  const shirtMat = mat(shirt, { roughness: 0.62, metalness: 0.15 });
-  const accentMat = mat(accent, {
-    roughness: 0.28,
-    metalness: 0.7,
-    emissive: accent,
-    emissiveIntensity: 0.55,
+  const skinMat = mat(skinTone, { roughness: 0.82 });
+  const clothMat = mat(cloth, { roughness: 0.92 });
+  const wrapMat = mat(wrap, { roughness: 0.88 });
+  const leatherMat = mat(0x3a2416, { roughness: 0.9 });
+  const hairMat = mat(0x140c08, { roughness: 0.95 });
+  const woodMat = mat(0x5a3a1e, { roughness: 0.8 });
+  const spiritMat = mat(spirit, {
+    roughness: 0.45,
+    emissive: spirit,
+    emissiveIntensity: 0.28,
   });
-  const darkMat = mat(0x14181c, { roughness: 0.4, metalness: 0.65 });
-  const hairMat = mat(0x1a100c, { roughness: 0.92 });
-  const bootMat = mat(0x22282e, { roughness: 0.55, metalness: 0.35 });
-  const lensMat = new THREE.MeshStandardMaterial({
-    color: accent,
-    emissive: accent,
-    emissiveIntensity: 0.7,
-    transparent: true,
-    opacity: 0.55,
-    metalness: 0.9,
-    roughness: 0.15,
-  });
+  const ochreMat = mat(0xb86a2a, { roughness: 0.7 });
 
-  // --- hips / torso ---
-  const hips = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.18, 0.16, 4, 10), suitMat), castShadow);
-  hips.position.y = 0.92;
+  // hips + wrapped skirt / tunic hem
+  const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.14, 4, 10), clothMat), castShadow);
+  hips.position.y = 0.9;
   root.add(hips);
 
-  const torso = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.38, 6, 12), suitMat), castShadow);
-  torso.position.y = 1.28;
-  root.add(torso);
+  const tunic = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.42, 6, 12), clothMat), castShadow);
+  tunic.position.y = 1.28;
+  root.add(tunic);
 
-  const vest = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.42, 0.34), shirtMat), castShadow);
-  vest.position.y = 1.32;
+  // woven sash
+  const sash = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.23, 0.04, 6, 18), wrapMat), castShadow);
+  sash.rotation.x = Math.PI / 2;
+  sash.position.y = 1.05;
+  root.add(sash);
+
+  // chest wrap / vest of fiber
+  const vest = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.34, 0.28), wrapMat), castShadow);
+  vest.position.y = 1.34;
   root.add(vest);
 
-  // tech chest panel
-  const panel = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.2, 0.06), darkMat), castShadow);
-  panel.position.set(0, 1.34, 0.17);
-  root.add(panel);
-  const panelGlow = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.04), accentMat), castShadow);
-  panelGlow.position.set(0, 1.34, 0.2);
-  root.add(panelGlow);
+  // painted ochre band across chest
+  const paint = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.3), ochreMat), castShadow);
+  paint.position.y = 1.4;
+  root.add(paint);
 
-  // belt
-  const belt = addShadow(new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.035, 6, 20), darkMat), castShadow);
-  belt.rotation.x = Math.PI / 2;
-  belt.position.y = 1.02;
-  root.add(belt);
-  const buckle = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.06, 0.06), accentMat), castShadow);
-  buckle.position.set(0, 1.02, 0.22);
-  root.add(buckle);
-
-  // --- legs (pivots at hip) ---
+  // legs
   const leftLeg = new THREE.Group();
-  leftLeg.position.set(-0.12, 0.92, 0);
+  leftLeg.position.set(-0.11, 0.9, 0);
   const rightLeg = new THREE.Group();
-  rightLeg.position.set(0.12, 0.92, 0);
+  rightLeg.position.set(0.11, 0.9, 0);
 
-  for (const [leg, side] of [
-    [leftLeg, -1],
-    [rightLeg, 1],
-  ]) {
-    const thigh = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.28, 4, 8), suitMat), castShadow);
-    thigh.position.y = -0.22;
+  for (const leg of [leftLeg, rightLeg]) {
+    const thigh = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.26, 4, 8), skinMat), castShadow);
+    thigh.position.y = -0.2;
     leg.add(thigh);
-    const shin = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.26, 4, 8), suitMat), castShadow);
-    shin.position.y = -0.52;
+    const shin = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.24, 4, 8), skinMat), castShadow);
+    shin.position.y = -0.5;
     leg.add(shin);
-    const boot = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.22), bootMat), castShadow);
-    boot.position.set(0, -0.72, 0.03);
-    leg.add(boot);
-    const soleGlow = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.02, 0.18), accentMat), castShadow);
-    soleGlow.position.set(0, -0.78, 0.03);
-    leg.add(soleGlow);
-    // knee pad
-    const knee = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), darkMat), castShadow);
-    knee.position.set(side * 0.02, -0.38, 0.06);
-    leg.add(knee);
+    // soft leather wrap at calf
+    const wrapBand = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.018, 5, 12), leatherMat), castShadow);
+    wrapBand.rotation.x = Math.PI / 2;
+    wrapBand.position.y = -0.42;
+    leg.add(wrapBand);
+    // foot
+    const foot = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.07, 0.18), leatherMat), castShadow);
+    foot.position.set(0, -0.7, 0.02);
+    leg.add(foot);
     root.add(leg);
   }
 
-  // --- arms ---
+  // arms
   const leftArm = new THREE.Group();
-  leftArm.position.set(-0.3, 1.48, 0);
+  leftArm.position.set(-0.28, 1.48, 0);
   const rightArm = new THREE.Group();
-  rightArm.position.set(0.3, 1.48, 0);
+  rightArm.position.set(0.28, 1.48, 0);
 
   for (const [arm, side] of [
     [leftArm, -1],
     [rightArm, 1],
   ]) {
-    const upper = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.22, 4, 8), suitMat), castShadow);
-    upper.position.y = -0.16;
-    arm.add(upper);
-    const fore = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.048, 0.2, 4, 8), skinMat), castShadow);
-    fore.position.y = -0.42;
-    arm.add(fore);
-    const hand = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), skinMat), castShadow);
-    hand.position.y = -0.58;
-    arm.add(hand);
-    const shoulder = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 10), suitMat), castShadow);
-    shoulder.position.set(side * 0.02, 0.02, 0);
+    const shoulder = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 10), skinMat), castShadow);
     arm.add(shoulder);
+    const upper = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.052, 0.2, 4, 8), skinMat), castShadow);
+    upper.position.y = -0.15;
+    arm.add(upper);
+    const fore = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.18, 4, 8), skinMat), castShadow);
+    fore.position.y = -0.4;
+    arm.add(fore);
+    const hand = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), skinMat), castShadow);
+    hand.position.y = -0.55;
+    arm.add(hand);
+    // wrist bead
+    const bead = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.012, 5, 10), spiritMat), castShadow);
+    bead.rotation.x = Math.PI / 2;
+    bead.position.y = -0.48;
+    arm.add(bead);
+    // shoulder feather tuft
+    const feather = shadowed(new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.16, 5), wrapMat), castShadow);
+    feather.position.set(side * 0.04, 0.08, -0.04);
+    feather.rotation.z = side * 0.5;
+    feather.rotation.x = 0.4;
+    arm.add(feather);
     root.add(arm);
   }
 
-  // watch on left wrist
-  const watch = addShadow(new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.018, 6, 14), accentMat), castShadow);
-  watch.rotation.x = Math.PI / 2;
-  watch.position.set(0, -0.5, 0);
-  leftArm.add(watch);
-  const watchFace = addShadow(new THREE.Mesh(new THREE.CircleGeometry(0.035, 12), darkMat), castShadow);
-  watchFace.position.set(0, -0.5, 0.04);
-  leftArm.add(watchFace);
+  // satchel (natural, not tech pack)
+  const satchel = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.26, 0.12), leatherMat), castShadow);
+  satchel.position.set(0.22, 1.15, 0.05);
+  satchel.rotation.z = -0.15;
+  root.add(satchel);
+  const strap = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.55, 0.02), leatherMat), castShadow);
+  strap.position.set(0.08, 1.35, 0.02);
+  strap.rotation.z = 0.55;
+  root.add(strap);
 
-  // shoulder scanner gadget (right)
-  const scanner = new THREE.Group();
-  scanner.position.set(0.08, 0.06, -0.02);
-  const scanBody = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.2), darkMat), castShadow);
-  scanner.add(scanBody);
-  const scanLens = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.06, 12), accentMat), castShadow);
-  scanLens.rotation.x = Math.PI / 2;
-  scanLens.position.set(0, 0.02, 0.12);
-  scanner.add(scanLens);
-  const antenna = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.16, 6), accentMat), castShadow);
-  antenna.position.set(0.04, 0.12, -0.04);
-  scanner.add(antenna);
-  rightArm.add(scanner);
-
-  // backpack / field kit
-  const pack = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.42, 0.18), darkMat), castShadow);
-  pack.position.set(0, 1.3, -0.22);
-  root.add(pack);
-  const packLight = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.04), accentMat), castShadow);
-  packLight.position.set(0, 1.42, -0.32);
-  root.add(packLight);
-
-  // --- head ---
-  const neck = addShadow(new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.1, 10), skinMat), castShadow);
-  neck.position.y = 1.58;
+  // neck + head
+  const neck = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.1, 10), skinMat), castShadow);
+  neck.position.y = 1.56;
   root.add(neck);
 
-  const head = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 16), skinMat), castShadow);
-  head.position.y = 1.78;
+  const head = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.165, 18, 16), skinMat), castShadow);
+  head.position.y = 1.76;
   head.scale.set(0.95, 1.05, 0.92);
   root.add(head);
 
-  // face plane (front only)
   const faceTex = loadFaceTexture(skin.face);
   const face = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.26, 0.28),
+    new THREE.PlaneGeometry(0.25, 0.27),
     new THREE.MeshStandardMaterial({
       map: faceTex,
       transparent: true,
-      roughness: 0.85,
-      metalness: 0,
+      roughness: 0.9,
       depthWrite: false,
     })
   );
-  face.position.set(0, 1.78, 0.155);
+  face.position.set(0, 1.76, 0.15);
   root.add(face);
 
-  // hair volume + braid hint
-  const hair = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.175, 14, 12), hairMat), castShadow);
+  // dark hair + long braid
+  const hair = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 12), hairMat), castShadow);
   hair.position.set(0, 1.84, -0.02);
-  hair.scale.set(1.05, 0.75, 1.1);
+  hair.scale.set(1.08, 0.72, 1.12);
   root.add(hair);
-  const braid = addShadow(new THREE.Mesh(new THREE.CapsuleGeometry(0.035, 0.35, 4, 8), hairMat), castShadow);
-  braid.position.set(-0.12, 1.55, -0.12);
-  braid.rotation.z = 0.35;
-  braid.rotation.x = 0.4;
+  const braid = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.032, 0.42, 4, 8), hairMat), castShadow);
+  braid.position.set(-0.1, 1.48, -0.14);
+  braid.rotation.z = 0.28;
+  braid.rotation.x = 0.45;
   root.add(braid);
+  const braidTip = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), wrapMat), castShadow);
+  braidTip.position.set(-0.14, 1.22, -0.22);
+  root.add(braidTip);
 
-  // tech headband
-  const band = addShadow(new THREE.Mesh(new THREE.TorusGeometry(0.155, 0.022, 6, 20), darkMat), castShadow);
+  // woven headband (no gadgets)
+  const band = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 5, 18), wrapMat), castShadow);
   band.rotation.x = Math.PI / 2;
   band.position.set(0, 1.9, 0);
   root.add(band);
-  const bandGem = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.03, 8, 8), accentMat), castShadow);
-  bandGem.position.set(0, 1.9, 0.16);
-  root.add(bandGem);
+  const bandBead = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.025, 8, 8), spiritMat), castShadow);
+  bandBead.position.set(0, 1.9, 0.15);
+  root.add(bandBead);
 
-  // glasses
-  const bridge = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.02), darkMat), castShadow);
-  bridge.position.set(0, 1.8, 0.175);
-  root.add(bridge);
+  // ears
   for (const side of [-1, 1]) {
-    const frame = addShadow(new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.012, 6, 16), darkMat), castShadow);
-    frame.position.set(side * 0.08, 1.8, 0.17);
-    root.add(frame);
-    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.048, 16), lensMat);
-    lens.position.set(side * 0.08, 1.8, 0.175);
-    root.add(lens);
-    const armG = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.015, 0.015), darkMat), castShadow);
-    armG.position.set(side * 0.15, 1.8, 0.1);
-    armG.rotation.y = side * 0.5;
-    root.add(armG);
-  }
-
-  // ear gadgets
-  for (const side of [-1, 1]) {
-    const ear = addShadow(new THREE.Mesh(new THREE.SphereGeometry(0.04, 8, 8), skinMat), castShadow);
-    ear.position.set(side * 0.17, 1.78, 0);
+    const ear = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), skinMat), castShadow);
+    ear.position.set(side * 0.16, 1.76, 0);
     root.add(ear);
-    if (side === 1) {
-      const earpiece = addShadow(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.06, 0.05), accentMat), castShadow);
-      earpiece.position.set(0.19, 1.76, 0.02);
-      root.add(earpiece);
-    }
   }
 
-  // soft accent point light attached to chest (reads in 3rd person)
-  const glow = new THREE.PointLight(accent, 0.35, 2.5);
-  glow.position.set(0, 1.35, 0.25);
+  // wooden amulet with soft spirit glow (subtle)
+  const cord = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.008, 4, 14), woodMat), castShadow);
+  cord.position.set(0, 1.52, 0.12);
+  cord.rotation.x = 0.5;
+  root.add(cord);
+  const amulet = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.045, 10, 10), spiritMat), castShadow);
+  amulet.position.set(0, 1.42, 0.18);
+  root.add(amulet);
+
+  // soft warm spirit light — not neon LED
+  const glow = new THREE.PointLight(spirit, 0.22, 2.2);
+  glow.position.set(0, 1.4, 0.25);
   root.add(glow);
 
   root.userData.skinId = skin.id;
@@ -275,7 +236,6 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   return root;
 }
 
-/** Simple walk / idle pose on avatar joints. */
 export function animateAvatar(avatar, dt, moving, sprint = false) {
   const joints = avatar?.userData?.joints;
   if (!joints) return;
@@ -291,6 +251,6 @@ export function animateAvatar(avatar, dt, moving, sprint = false) {
   joints.rightLeg.rotation.x = Math.sin(p + Math.PI) * amp;
   joints.leftArm.rotation.x = Math.sin(p + Math.PI) * amp * 0.7;
   joints.rightArm.rotation.x = Math.sin(p) * amp * 0.7;
-  joints.leftArm.rotation.z = 0.12;
-  joints.rightArm.rotation.z = -0.12;
+  joints.leftArm.rotation.z = 0.1;
+  joints.rightArm.rotation.z = -0.1;
 }

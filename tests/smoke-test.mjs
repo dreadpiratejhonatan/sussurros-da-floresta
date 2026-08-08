@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b003"), "dist HTML missing cache bust b003");
-assert(hostHtml.includes("?v=b003"), "host HTML missing cache bust b003");
+assert(distHtml.includes("?v=b004"), "dist HTML missing cache bust b004");
+assert(hostHtml.includes("?v=b004"), "host HTML missing cache bust b004");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
