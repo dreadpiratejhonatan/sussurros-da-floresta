@@ -6,6 +6,7 @@ export class HUD {
     this.objective = document.getElementById("objective");
     this.progress = document.getElementById("hud-progress");
     this.loreBar = document.getElementById("hud-lore");
+    this.climateBar = document.getElementById("hud-climate");
     this.balloon = document.getElementById("whisper-balloon");
     this._toastTimer = 0;
     this._balloonTimer = 0;
@@ -47,6 +48,12 @@ export class HUD {
     if (!this.loreBar) return;
     this.loreBar.textContent = `Lore ${done}/${total} · Espíritos ${animalsDone}/${animalsTotal}`;
     this.loreBar.hidden = false;
+  }
+
+  setClimate(line) {
+    if (!this.climateBar) return;
+    this.climateBar.textContent = line || "";
+    this.climateBar.hidden = !line;
   }
 
   showToast(text, ms = 2600) {

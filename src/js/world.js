@@ -44,13 +44,12 @@ export class World {
     this._fill.position.set(-10, 18, -8);
     this.scene.add(this._fill);
 
-    const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(w.size, 72),
-      new THREE.MeshStandardMaterial({ color: w.ground, roughness: 0.96 })
-    );
+    this._groundMat = new THREE.MeshStandardMaterial({ color: w.ground, roughness: 0.96 });
+    const ground = new THREE.Mesh(new THREE.CircleGeometry(w.size, 72), this._groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.scene.add(ground);
+    this._leafMats = [];
 
     this._addRiver();
     this._scatterProps();
@@ -104,6 +103,7 @@ export class World {
 
     const grassGeo = new THREE.ConeGeometry(0.08, 0.45, 3);
     const grassMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.leaf, roughness: 1 });
+    this._leafMats.push(grassMat);
     for (let i = 0; i < grass; i++) {
       const ang = rand() * Math.PI * 2;
       const dist = 3 + rand() * (size - 6);
@@ -135,6 +135,7 @@ export class World {
     trunk.castShadow = true;
     group.add(trunk);
     const leafMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.leaf, roughness: 0.88 });
+    this._leafMats.push(leafMat);
     const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.35 * scale, 3.1 * scale, 7), leafMat);
     canopy.position.y = trunkH + 1.05 * scale;
     canopy.castShadow = true;
@@ -384,20 +385,37 @@ export class World {
     return best;
   }
 
-  update(t, dayPhase) {
-    const sky = new THREE.Color(CONFIG.world.skyNight).lerp(
-      new THREE.Color(CONFIG.world.skyDay),
-      dayPhase * this.dayMult
-    );
+  update(t, dayPhase, climate = null) {
+    const c = climate || {
+      skyDay: CONFIG.world.skyDay,
+      skyNight: CONFIG.world.skyNight,
+      fogColor: CONFIG.world.fog,
+      ground: CONFIG.world.ground,
+      leaf: CONFIG.colors.leaf,
+      sunMult: 1,
+      fogDensity: 0.014 * this.fogMult + (1 - dayPhase) * 0.006,
+      rain: 0,
+      sand: 0,
+    };
+
+    const sky = new THREE.Color(c.skyNight).lerp(new THREE.Color(c.skyDay), dayPhase * this.dayMult);
+    // Sand / heavy fog washes the sky
+    if (c.sand > 0.2) sky.lerp(new THREE.Color(0xc4a06a), c.sand * 0.55);
+    if (c.fog > 0.7) sky.lerp(new THREE.Color(c.fogColor), 0.25);
+
     this.scene.background.copy(sky);
-    if (this.scene.fog) this.scene.fog.color.copy(sky);
-    // Keep fog light enough to read Albert; night only a touch denser
     if (this.scene.fog) {
-      this.scene.fog.density = 0.014 * this.fogMult + (1 - dayPhase) * 0.006;
+      this.scene.fog.color.copy(sky).lerp(new THREE.Color(c.fogColor), 0.35);
+      this.scene.fog.density = c.fogDensity * this.fogMult;
     }
-    if (this._sun) this._sun.intensity = (0.75 + dayPhase * 0.55) * this.dayMult;
-    if (this._hemi) this._hemi.intensity = (0.8 + dayPhase * 0.4) * this.dayMult;
-    if (this._fill) this._fill.intensity = (0.4 + dayPhase * 0.25) * this.dayMult;
+
+    const dim = 1 - c.sand * 0.35 - (c.rain > 0.5 ? 0.12 : 0);
+    if (this._sun) this._sun.intensity = (0.75 + dayPhase * 0.55) * this.dayMult * c.sunMult * dim;
+    if (this._hemi) this._hemi.intensity = (0.8 + dayPhase * 0.4) * this.dayMult * dim;
+    if (this._fill) this._fill.intensity = (0.4 + dayPhase * 0.25) * this.dayMult * dim;
+
+    if (this._groundMat) this._groundMat.color.setHex(c.ground);
+    for (const m of this._leafMats) m.color.setHex(c.leaf);
 
     for (const [, entry] of this.puzzleMeshes) {
       entry.mesh.rotation.y = t * 0.25;
@@ -410,7 +428,10 @@ export class World {
       f.mesh.position.x = f.base.x + Math.cos(t * f.speed + f.phase) * f.radius;
       f.mesh.position.z = f.base.z + Math.sin(t * f.speed * 0.8 + f.phase) * f.radius;
       f.mesh.position.y = f.base.y + Math.sin(t * f.speed * 1.4 + f.phase) * 0.35;
-      f.mesh.material.opacity = 0.35 + (1 - dayPhase) * 0.5 + Math.sin(t * 3 + f.phase) * 0.15;
+      // Fireflies hide in rain / sandstorm; glow more at night when clear
+      const hide = Math.max(c.rain, c.sand);
+      f.mesh.material.opacity =
+        Math.max(0, 0.35 + (1 - dayPhase) * 0.5 + Math.sin(t * 3 + f.phase) * 0.15) * (1 - hide);
     }
     for (const fp of this.footprints) {
       fp.material.opacity = 0.12 + (1 - dayPhase) * 0.18;

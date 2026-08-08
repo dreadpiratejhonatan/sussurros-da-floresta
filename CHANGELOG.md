@@ -1,5 +1,13 @@
 # Changelog
 
+## b011 — 2026-08-08
+
+- Estações do ano (primavera → verão → outono → inverno) com cores e clima próprios
+- Clima jogável: névoa, chuva, vento, tempestade de areia + partículas
+- Áudio ambiente acompanha chuva/vento/areia e dia/noite
+- Ciclo dia/noite mais presente; HUD mostra estação · dia/noite · clima
+- Cache `b011`
+
 ## b010 — 2026-08-08
 
 - Câmera 3ª pessoa fica acima do chão; olhar cima/baixo é cabeça/pescoço + ponto de mira

@@ -232,6 +232,21 @@ html, body {
   backdrop-filter: blur(6px);
 }
 
+.hud__climate {
+  position: absolute;
+  left: 16px;
+  top: 150px;
+  max-width: min(360px, 62vw);
+  padding: 5px 10px;
+  background: rgba(10, 22, 16, 0.5);
+  border-left: 3px solid #f0c878;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffe9b8;
+  backdrop-filter: blur(6px);
+}
+
 .hud__pause {
   position: absolute;
   top: 14px;
@@ -382,4 +397,5 @@ html, body {
   .hud__objective { top: 40px; }
   .hud__progress { top: 76px; }
   .hud__lore { top: 108px; }
+  .hud__climate { top: 138px; font-size: 10px; }
 }
