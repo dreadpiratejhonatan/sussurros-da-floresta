@@ -267,12 +267,14 @@ class Game {
         this.save.markAnimal(animal.cfg.id);
         animal.seen = true;
         this.audio.spiritTone();
-        this.hud.showBalloon(animal.cfg.label, animal.cfg.line, 5000);
-        // clue toward an unsolved mystery
         const unsolved = CONFIG.puzzles.find((p) => !this.save.isSolved(p.saveId));
-        if (unsolved?.clue) {
-          setTimeout(() => this.hud.showToast(unsolved.clue, 3200), 900);
-        }
+        this.hud.showChronicle({
+          name: animal.cfg.label,
+          line: animal.cfg.line,
+          fact: unsolved?.clue || "",
+          lineMs: 9000,
+          factMs: 10000,
+        });
         this._refreshBars();
       }
       return;
