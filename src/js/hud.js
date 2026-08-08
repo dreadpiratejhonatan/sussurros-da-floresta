@@ -41,19 +41,19 @@ export class HUD {
 
   setProgress(done, total) {
     if (!this.progress) return;
-    this.progress.textContent = `Mistérios ${done}/${total}`;
+    this.progress.textContent = `${done}/${total} mistérios`;
     this.progress.hidden = false;
   }
 
   setLore(done, total, animalsDone, animalsTotal) {
     if (!this.loreBar) return;
-    this.loreBar.textContent = `Lore ${done}/${total} · Espíritos ${animalsDone}/${animalsTotal}`;
+    this.loreBar.textContent = `${done}/${total} lore · ${animalsDone}/${animalsTotal} espíritos`;
     this.loreBar.hidden = false;
   }
 
   setChronicles(done, total) {
     if (!this.chronicleBar) return;
-    this.chronicleBar.textContent = `Crônicas ${done}/${total}`;
+    this.chronicleBar.textContent = `${done}/${total} crônicas`;
     this.chronicleBar.hidden = false;
   }
 
