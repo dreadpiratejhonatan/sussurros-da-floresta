@@ -1,5 +1,11 @@
 # Changelog
 
+## b009 — 2026-08-08
+
+- Albert redesenhado a partir da foto do protagonista: óculos, barba, jaqueta azul, zíper laranja, mochila
+- Face regenerada (pele clara-média, óculos pretos, barba)
+- Cache `b009`
+
 ## b008 — 2026-08-08
 
 - Cena bem mais clara: sol/hemi/fill + névoa mais leve + dia mais longo

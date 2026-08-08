@@ -1,4 +1,4 @@
-/** Gera faces/albert.png 256×256 — guia da mata, pintura de argila e olhos âmbar. */
+/** Gera faces/albert.png 256×256 — protagonista (óculos, barba, cabelo escuro). */
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -40,30 +40,54 @@ const fill = (x0, y0, x1, y1, r, g, b, a = 255) => {
   for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) set(x, y, r, g, b, a);
 };
 
+// transparent canvas
 fill(0, 0, W, H, 0, 0, 0, 0);
-// copper-brown skin (darker than b005 — clear prod test)
-fill(52, 44, 204, 228, 96, 54, 34);
-// black hair fringe
-fill(52, 44, 204, 90, 18, 10, 6);
+
+// light–medium skin (photo reference)
+fill(48, 40, 208, 230, 198, 154, 118);
+
+// short dark wavy hair fringe
+fill(48, 40, 208, 92, 42, 28, 20);
+fill(56, 88, 88, 108, 42, 28, 20);
+fill(168, 88, 200, 108, 42, 28, 20);
+
 // brows
-fill(74, 100, 118, 114, 28, 16, 10);
-fill(138, 100, 182, 114, 28, 16, 10);
-// eyes — warm amber iris (was green)
-fill(82, 120, 110, 142, 22, 12, 8);
-fill(146, 120, 174, 142, 22, 12, 8);
-fill(90, 128, 104, 138, 210, 150, 55);
-fill(154, 128, 168, 138, 210, 150, 55);
+fill(72, 108, 118, 120, 48, 32, 24);
+fill(138, 108, 184, 120, 48, 32, 24);
+
+// eyes — dark brown
+fill(78, 126, 112, 148, 36, 24, 18);
+fill(144, 126, 178, 148, 36, 24, 18);
+fill(86, 132, 104, 144, 72, 48, 32);
+fill(152, 132, 170, 144, 72, 48, 32);
+// catchlight
+fill(98, 134, 104, 140, 220, 220, 210);
+fill(164, 134, 170, 140, 220, 220, 210);
+
+// thick black rectangular glasses
+fill(64, 118, 192, 126, 18, 18, 20); // top rim
+fill(64, 152, 192, 160, 18, 18, 20); // bottom rim
+fill(64, 118, 72, 160, 18, 18, 20); // left
+fill(184, 118, 192, 160, 18, 18, 20); // right
+fill(124, 130, 132, 148, 18, 18, 20); // bridge
+// lens tint (subtle)
+fill(74, 126, 120, 152, 40, 50, 70, 90);
+fill(136, 126, 182, 152, 40, 50, 70, 90);
+
 // nose
-fill(116, 144, 140, 174, 78, 42, 26);
-// mouth
-fill(104, 190, 152, 200, 70, 36, 28);
-// white clay forehead stripe (ancestral mark — very visible)
-fill(108, 88, 148, 108, 232, 220, 190, 230);
-// red ochre cheek bars (prod-visible paint)
-fill(54, 150, 82, 178, 176, 58, 32, 220);
-fill(174, 150, 202, 178, 176, 58, 32, 220);
-// small spirit dot under left eye
-fill(88, 148, 100, 160, 120, 200, 140, 200);
+fill(116, 148, 140, 178, 170, 128, 98);
+
+// mustache + short beard
+fill(96, 182, 160, 196, 58, 40, 30);
+fill(88, 196, 168, 224, 62, 44, 34);
+fill(72, 200, 96, 222, 62, 44, 34);
+fill(160, 200, 184, 222, 62, 44, 34);
+// mouth line through mustache
+fill(108, 188, 148, 196, 120, 80, 64);
+
+// ears hint (sides of face plate)
+fill(44, 130, 52, 168, 188, 144, 110);
+fill(204, 130, 212, 168, 188, 144, 110);
 
 const raw = Buffer.alloc((W * 4 + 1) * H);
 for (let y = 0; y < H; y++) {
