@@ -1,5 +1,11 @@
 # Changelog
 
+## b006 — 2026-08-08
+
+- Skin do Albert atualizada para teste de produção: pele cobre, manto verde-musgo, pintura de argila, coroa de penas, amuleto âmbar
+- Face regenerada (olhos âmbar + marcas vermelhas/brancas)
+- Cache `b006` em HTML / SW / build
+
 ## b003 — 2026-08-08
 
 - Produção HostGator em **https://jhonatanribeiro.com/spirit/** (SPIRIT)
