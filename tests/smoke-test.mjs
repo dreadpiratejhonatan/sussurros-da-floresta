@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b012"), "dist HTML missing cache bust b012");
-assert(hostHtml.includes("?v=b012"), "host HTML missing cache bust b012");
+assert(distHtml.includes("?v=b013"), "dist HTML missing cache bust b013");
+assert(hostHtml.includes("?v=b013"), "host HTML missing cache bust b013");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -50,8 +50,15 @@ assert(cfg.includes("puzzles"), "puzzles in CONFIG");
 assert(cfg.includes("Cananéia"), "Cananéia theme in CONFIG");
 assert(cfg.includes("npcs"), "NPCs in CONFIG");
 assert(cfg.includes("karai-carijo"), "Carijó horseman NPC");
+assert(cfg.includes("yacua-cacador"), "hunter NPC");
 assert(cfg.includes("bacharel"), "Bacharel de Cananéia NPC");
+assert(cfg.includes("Fronteira"), "frontier pitch");
 assert(fs.existsSync("src/js/npcs.js"), "npcs module");
+
+const audioFrontier = fs.readFileSync("src/js/audio.js", "utf8");
+assert(audioFrontier.includes("_trailDrum"), "frontier drum pulse");
+assert(audioFrontier.includes("_playPhrase"), "soaring phrase");
+assert(audioFrontier.includes("not The Gael"), "original motif note");
 assert(cfg.includes("cervo-luz"), "spirit animals in CONFIG");
 assert(cfg.includes("lore"), "lore in CONFIG");
 assert(fs.existsSync("src/js/animals.js"), "animals module");

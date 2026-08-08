@@ -3,11 +3,11 @@ export const CONFIG = {
   name: "Sussurros da Floresta",
   slug: "spirit",
   prodPath: "/spirit/",
-  pitch: "Cananéia e os primeiros povos",
-  tone: "mystery",
+  pitch: "Fronteira · primeiros povos · novas terras",
+  tone: "epic-frontier",
   language: "pt-BR",
   playerCount: "solo",
-  winCondition: "Revelar os mistérios e ouvir as crônicas da exploração",
+  winCondition: "Explorar a mata, ouvir as crônicas e revelar os mistérios",
   build:
     typeof window !== "undefined" && window.SDF_BUILD
       ? window.SDF_BUILD
@@ -38,30 +38,45 @@ export const CONFIG = {
       shirt: "#1a2740",
       skin: "#c49a76",
       accent: "#e85a2a",
-      personality: "Explorador da mata; busca as crônicas de Cananéia e dos primeiros povos.",
-      blurb: "Único jogável: óculos de grau, jaqueta azul, zíper laranja e mochila — ouve NPCs históricos na trilha.",
+      personality: "Explorador da fronteira; segue caçadores, crônicas e o sussurro das novas terras.",
+      blurb: "Único jogável: óculos de grau, jaqueta azul, zíper laranja e mochila — o forasteiro que ouve a mata.",
     },
   },
   skinOrder: ["albert"],
 
   /**
    * NPCs históricos / míticos (não jogáveis).
-   * Fontes: pt.wikipedia.org/wiki/Cananeia e história da exploração do litoral sul.
+   * Tom: exploração / caça / chegada às novas terras (mood fronteira).
+   * Fatos: Cananéia & litoral sul (pt.wikipedia.org/wiki/Cananeia).
    */
   npcs: [
     {
       id: "karai-carijo",
       name: "Karaí Carijó",
       kind: "horseman",
-      title: "Cavaleiro da Maratayama",
+      title: "Caçador da Maratayama",
       skin: 0x8a5a38,
       shirt: 0x3a5a28,
       pants: 0x2a2418,
       hair: 0x140c08,
       accent: 0xe07030,
       fact:
-        "Antes de Cananéia, este litoral era Maratayama — «mar» e «terra» em tupi-guarani. Os Carijó/Guarani conheciam a costa e o caminho do Peabiru muito antes das caravelas.",
-      line: "Albert… a trilha que pisas já tinha nome quando o mapa ainda era névoa.",
+        "Antes de Cananéia, este litoral era Maratayama — «mar» e «terra» em tupi-guarani. Os Carijó/Guarani caçavam e guiavam na costa e no Peabiru muito antes das caravelas.",
+      line: "Corro atrás da presa como o vento na crista. A trilha é nossa — o mapa veio depois.",
+    },
+    {
+      id: "yacua-cacador",
+      name: "Yacuã",
+      kind: "elder",
+      title: "Caçador do estuário",
+      skin: 0x7a4a2a,
+      shirt: 0x4a3420,
+      pants: 0x2a2018,
+      hair: 0x120c08,
+      accent: 0xc45a28,
+      fact:
+        "No estuário de Cananéia–Iguape, a caça, a pesca e os caminhos ligavam ilhas, mangue e sertão. Os primeiros povos liam rastros onde o europeu só via selva.",
+      line: "Ouviste o cervo? Na fronteira, quem não escuta o animal não chega vivo ao rio.",
     },
     {
       id: "bacharel",
