@@ -42,8 +42,8 @@ function shadowed(mesh, on) {
 }
 
 /**
- * Albert — guia da mata / primeiros povos.
- * Pele cobre, manto verde-musgo, pintura de argila, trança, amuleto — sem glow tech.
+ * Albert — protagonista de Sussurros da Floresta.
+ * Referência: óculos pretos, barba, jaqueta azul com zíper laranja, mochila.
  */
 export function buildAvatar(skinId, { castShadow = true } = {}) {
   const skin = getSkin(skinId);
@@ -51,195 +51,179 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   root.name = `avatar-${skin.id}`;
 
   const skinTone = new THREE.Color(skin.skin);
-  const cloth = new THREE.Color(skin.suit);
-  const wrap = new THREE.Color(skin.shirt);
-  const spirit = new THREE.Color(skin.accent);
+  const jacket = new THREE.Color(skin.suit);
+  const shirt = new THREE.Color(skin.shirt);
+  const zip = new THREE.Color(skin.accent);
 
-  const skinMat = mat(skinTone, { roughness: 0.72 });
-  const clothMat = mat(cloth, { roughness: 0.85 });
-  const wrapMat = mat(wrap, { roughness: 0.8 });
-  const leatherMat = mat(0x3a2618, { roughness: 0.85 });
-  const hairMat = mat(0x1a100c, { roughness: 0.9 });
-  const woodMat = mat(0x6a4a28, { roughness: 0.75 });
-  const clayMat = mat(0xf0e4c8, { roughness: 0.7 });
-  const spiritMat = mat(spirit, {
-    roughness: 0.5,
-    emissive: spirit,
-    emissiveIntensity: 0.18,
-  });
-  const ochreMat = mat(0xc44a24, { roughness: 0.65 });
-  const featherMat = mat(0xb85828, { roughness: 0.65 });
+  const skinMat = mat(skinTone, { roughness: 0.7 });
+  const jacketMat = mat(jacket, { roughness: 0.55, metalness: 0.08 });
+  const navyMat = mat(shirt, { roughness: 0.75 });
+  const zipMat = mat(zip, { roughness: 0.4, metalness: 0.35 });
+  const jeanMat = mat(0x2a3340, { roughness: 0.88 });
+  const bootMat = mat(0x1a1816, { roughness: 0.9 });
+  const hairMat = mat(0x2a1c14, { roughness: 0.88 });
+  const packMat = mat(0x4a4638, { roughness: 0.82 });
+  const glassMat = mat(0x141418, { roughness: 0.35, metalness: 0.4 });
+  const lensMat = mat(0x6a8498, { roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.35 });
 
-  // hips + wrapped skirt / tunic hem
-  const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.14, 4, 10), clothMat), castShadow);
-  hips.position.y = 0.9;
+  // hips / jeans waist
+  const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.12, 4, 10), jeanMat), castShadow);
+  hips.position.y = 0.92;
   root.add(hips);
 
-  const tunic = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.22, 0.42, 6, 12), clothMat), castShadow);
-  tunic.position.y = 1.28;
-  root.add(tunic);
+  // navy tee under jacket
+  const tee = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.2, 0.28, 4, 10), navyMat), castShadow);
+  tee.position.y = 1.28;
+  root.add(tee);
 
-  // woven sash (burnt orange — reads clearly vs moss tunic)
-  const sash = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.23, 0.045, 6, 18), wrapMat), castShadow);
-  sash.rotation.x = Math.PI / 2;
-  sash.position.y = 1.05;
-  root.add(sash);
+  // blue windbreaker body
+  const coat = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.52, 0.32), jacketMat), castShadow);
+  coat.position.y = 1.32;
+  root.add(coat);
 
-  // chest wrap / vest of fiber
-  const vest = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.34, 0.28), wrapMat), castShadow);
-  vest.position.y = 1.34;
-  root.add(vest);
+  // navy hood collar
+  const collar = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.28), navyMat), castShadow);
+  collar.position.y = 1.56;
+  root.add(collar);
+  const hood = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), navyMat), castShadow);
+  hood.position.set(0, 1.62, -0.08);
+  hood.rotation.x = 0.4;
+  root.add(hood);
 
-  // painted ochre band across chest
-  const paint = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.05, 0.3), ochreMat), castShadow);
-  paint.position.y = 1.4;
-  root.add(paint);
+  // orange-red zipper down the chest (signature from photo)
+  const zipper = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.48, 0.34), zipMat), castShadow);
+  zipper.position.set(-0.08, 1.32, 0.01);
+  root.add(zipper);
+  const zipPull = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.05), zipMat), castShadow);
+  zipPull.position.set(-0.08, 1.48, 0.18);
+  root.add(zipPull);
 
-  // clay shoulder marks (visible in 3rd person)
-  for (const side of [-1, 1]) {
-    const mark = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 0.04), clayMat), castShadow);
-    mark.position.set(side * 0.2, 1.48, 0.12);
-    root.add(mark);
-  }
+  // jacket hem / hand pockets hint
+  const hem = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.08, 0.34), jacketMat), castShadow);
+  hem.position.y = 1.04;
+  root.add(hem);
 
-  // legs
+  // legs — jeans
   const leftLeg = new THREE.Group();
   leftLeg.position.set(-0.11, 0.9, 0);
   const rightLeg = new THREE.Group();
   rightLeg.position.set(0.11, 0.9, 0);
 
   for (const leg of [leftLeg, rightLeg]) {
-    const thigh = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.07, 0.26, 4, 8), skinMat), castShadow);
+    const thigh = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.075, 0.28, 4, 8), jeanMat), castShadow);
     thigh.position.y = -0.2;
     leg.add(thigh);
-    const shin = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.06, 0.24, 4, 8), skinMat), castShadow);
-    shin.position.y = -0.5;
+    const shin = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.065, 0.26, 4, 8), jeanMat), castShadow);
+    shin.position.y = -0.52;
     leg.add(shin);
-    // soft leather wrap at calf
-    const wrapBand = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.065, 0.018, 5, 12), leatherMat), castShadow);
-    wrapBand.rotation.x = Math.PI / 2;
-    wrapBand.position.y = -0.42;
-    leg.add(wrapBand);
-    // foot
-    const foot = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.07, 0.18), leatherMat), castShadow);
-    foot.position.set(0, -0.7, 0.02);
-    leg.add(foot);
+    const boot = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.09, 0.2), bootMat), castShadow);
+    boot.position.set(0, -0.72, 0.02);
+    leg.add(boot);
     root.add(leg);
   }
 
-  // arms
+  // arms — jacket sleeves
   const leftArm = new THREE.Group();
-  leftArm.position.set(-0.28, 1.48, 0);
+  leftArm.position.set(-0.3, 1.48, 0);
   const rightArm = new THREE.Group();
-  rightArm.position.set(0.28, 1.48, 0);
+  rightArm.position.set(0.3, 1.48, 0);
 
-  for (const [arm, side] of [
-    [leftArm, -1],
-    [rightArm, 1],
-  ]) {
-    const shoulder = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 10), skinMat), castShadow);
+  for (const arm of [leftArm, rightArm]) {
+    const shoulder = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 10), jacketMat), castShadow);
     arm.add(shoulder);
-    const upper = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.052, 0.2, 4, 8), skinMat), castShadow);
+    const upper = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.055, 0.2, 4, 8), jacketMat), castShadow);
     upper.position.y = -0.15;
     arm.add(upper);
-    const fore = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.18, 4, 8), skinMat), castShadow);
+    const fore = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.048, 0.18, 4, 8), jacketMat), castShadow);
     fore.position.y = -0.4;
     arm.add(fore);
-    const hand = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.05, 8, 8), skinMat), castShadow);
-    hand.position.y = -0.55;
+    const cuff = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.05, 0.012, 5, 10), navyMat), castShadow);
+    cuff.rotation.x = Math.PI / 2;
+    cuff.position.y = -0.5;
+    arm.add(cuff);
+    const hand = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.048, 8, 8), skinMat), castShadow);
+    hand.position.y = -0.56;
     arm.add(hand);
-    // wrist bead
-    const bead = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.012, 5, 10), spiritMat), castShadow);
-    bead.rotation.x = Math.PI / 2;
-    bead.position.y = -0.48;
-    arm.add(bead);
     root.add(arm);
   }
 
-  // small hip pouch (side, not a glowing backpack)
-  const satchel = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.08), leatherMat), castShadow);
-  satchel.position.set(0.2, 1.05, 0.02);
-  satchel.rotation.z = -0.2;
-  root.add(satchel);
-  const strap = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.38, 0.015), leatherMat), castShadow);
-  strap.position.set(0.1, 1.28, 0.02);
-  strap.rotation.z = 0.45;
-  root.add(strap);
+  // hiking backpack (olive, readable from behind — no neon)
+  const pack = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.42, 0.18), packMat), castShadow);
+  pack.position.set(0, 1.35, -0.22);
+  root.add(pack);
+  const packLid = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.1, 0.2), packMat), castShadow);
+  packLid.position.set(0, 1.58, -0.22);
+  root.add(packLid);
+  for (const side of [-1, 1]) {
+    const strap = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.5, 0.03), packMat), castShadow);
+    strap.position.set(side * 0.14, 1.38, 0.02);
+    strap.rotation.x = -0.15;
+    root.add(strap);
+  }
 
   // neck + head
   const neck = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.1, 10), skinMat), castShadow);
-  neck.position.y = 1.56;
+  neck.position.y = 1.58;
   root.add(neck);
 
-  const head = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.165, 18, 16), skinMat), castShadow);
-  head.position.y = 1.76;
-  head.scale.set(0.95, 1.05, 0.92);
+  const head = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 16), skinMat), castShadow);
+  head.position.y = 1.78;
+  head.scale.set(0.95, 1.02, 0.92);
   root.add(head);
 
   const faceTex = loadFaceTexture(skin.face);
   const face = new THREE.Mesh(
-    new THREE.PlaneGeometry(0.25, 0.27),
+    new THREE.PlaneGeometry(0.26, 0.28),
     new THREE.MeshStandardMaterial({
       map: faceTex,
       transparent: true,
-      roughness: 0.9,
+      roughness: 0.85,
       depthWrite: false,
     })
   );
-  face.position.set(0, 1.76, 0.15);
+  face.position.set(0, 1.78, 0.155);
   root.add(face);
 
-  // dark hair + long braid
-  const hair = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.17, 14, 12), hairMat), castShadow);
-  hair.position.set(0, 1.84, -0.02);
-  hair.scale.set(1.08, 0.72, 1.12);
+  // short dark hair (no braid)
+  const hair = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.175, 14, 12), hairMat), castShadow);
+  hair.position.set(0, 1.88, -0.01);
+  hair.scale.set(1.05, 0.68, 1.1);
   root.add(hair);
-  const braid = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.032, 0.42, 4, 8), hairMat), castShadow);
-  braid.position.set(-0.1, 1.48, -0.14);
-  braid.rotation.z = 0.28;
-  braid.rotation.x = 0.45;
-  root.add(braid);
-  const braidTip = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), wrapMat), castShadow);
-  braidTip.position.set(-0.14, 1.22, -0.22);
-  root.add(braidTip);
+  const fringe = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.06, 0.1), hairMat), castShadow);
+  fringe.position.set(0, 1.92, 0.1);
+  root.add(fringe);
 
-  // woven headband + one soft feather (not a spike crown)
-  const band = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 5, 18), wrapMat), castShadow);
-  band.rotation.x = Math.PI / 2;
-  band.position.set(0, 1.9, 0);
-  root.add(band);
-  const bandBead = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), clayMat), castShadow);
-  bandBead.position.set(0, 1.9, 0.15);
-  root.add(bandBead);
-  const plume = shadowed(new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.16, 5), featherMat), castShadow);
-  plume.position.set(0.08, 1.98, -0.06);
-  plume.rotation.z = 0.55;
-  plume.rotation.x = 0.35;
-  root.add(plume);
+  // 3D glasses frame (matches photo)
+  const bridge = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.02), glassMat), castShadow);
+  bridge.position.set(0, 1.8, 0.175);
+  root.add(bridge);
+  for (const side of [-1, 1]) {
+    const rim = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.07, 0.025), glassMat), castShadow);
+    rim.position.set(side * 0.08, 1.8, 0.175);
+    root.add(rim);
+    const lens = new THREE.Mesh(new THREE.PlaneGeometry(0.085, 0.055), lensMat);
+    lens.position.set(side * 0.08, 1.8, 0.19);
+    root.add(lens);
+    const temple = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.015, 0.015), glassMat), castShadow);
+    temple.position.set(side * 0.16, 1.8, 0.1);
+    temple.rotation.y = side * 0.5;
+    root.add(temple);
+  }
 
   // ears
   for (const side of [-1, 1]) {
     const ear = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), skinMat), castShadow);
-    ear.position.set(side * 0.16, 1.76, 0);
+    ear.position.set(side * 0.165, 1.78, 0);
     root.add(ear);
   }
 
-  // wooden amulet — soft, no neon point light
-  const cord = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.008, 4, 14), woodMat), castShadow);
-  cord.position.set(0, 1.52, 0.12);
-  cord.rotation.x = 0.5;
-  root.add(cord);
-  const amulet = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 10), spiritMat), castShadow);
-  amulet.position.set(0, 1.42, 0.16);
-  root.add(amulet);
-
-  // Warm key light on the body so Albert never disappears into fog
-  const key = new THREE.PointLight(0xffe8c8, 0.65, 5.5, 2);
-  key.position.set(0.35, 1.7, 0.9);
+  // Warm fill so protagonist stays clear in the forest
+  const key = new THREE.PointLight(0xfff0dd, 0.7, 5.5, 2);
+  key.position.set(0.35, 1.75, 0.95);
   root.add(key);
-  const rim = new THREE.PointLight(0xb8dcc8, 0.28, 4.2, 2);
-  rim.position.set(-0.4, 1.5, -0.7);
-  root.add(rim);
+  const rimLight = new THREE.PointLight(0xc8dce8, 0.3, 4.2, 2);
+  rimLight.position.set(-0.35, 1.55, -0.75);
+  root.add(rimLight);
 
   root.userData.skinId = skin.id;
   root.userData.joints = { leftLeg, rightLeg, leftArm, rightArm };
@@ -262,6 +246,6 @@ export function animateAvatar(avatar, dt, moving, sprint = false) {
   joints.rightLeg.rotation.x = Math.sin(p + Math.PI) * amp;
   joints.leftArm.rotation.x = Math.sin(p + Math.PI) * amp * 0.7;
   joints.rightArm.rotation.x = Math.sin(p) * amp * 0.7;
-  joints.leftArm.rotation.z = 0.1;
-  joints.rightArm.rotation.z = -0.1;
+  joints.leftArm.rotation.z = 0.08;
+  joints.rightArm.rotation.z = -0.08;
 }
