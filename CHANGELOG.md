@@ -1,5 +1,11 @@
 # Changelog
 
+## b014 — 2026-08-08
+
+- Splash limpa: «Os primeiros povos» + jornada na mata (sem Cananéia / spoilers)
+- Tela de personagem: só o nome **ALBERT** (sem descrição)
+- Cache `b014`
+
 ## b013 — 2026-08-08
 
 - Tom de fronteira / exploração (mood Last of the Mohicans — trilha **original**, sem OST licenciada)

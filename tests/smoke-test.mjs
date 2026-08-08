@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b013"), "dist HTML missing cache bust b013");
-assert(hostHtml.includes("?v=b013"), "host HTML missing cache bust b013");
+assert(distHtml.includes("?v=b014"), "dist HTML missing cache bust b014");
+assert(hostHtml.includes("?v=b014"), "host HTML missing cache bust b014");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -47,13 +47,13 @@ assert(cfg.includes("#2f6db4"), "Albert blue jacket color");
 assert(cfg.includes("#e85a2a"), "Albert orange zipper accent");
 assert(cfg.includes("#c49a76"), "Albert photo skin tone");
 assert(cfg.includes("puzzles"), "puzzles in CONFIG");
-assert(cfg.includes("Cananéia"), "Cananéia theme in CONFIG");
+assert(cfg.includes("Os primeiros povos"), "pitch primeiros povos");
+assert(cfg.includes('name: "ALBERT"'), "ALBERT uppercase name");
 assert(cfg.includes("npcs"), "NPCs in CONFIG");
 assert(cfg.includes("karai-carijo"), "Carijó horseman NPC");
-assert(cfg.includes("yacua-cacador"), "hunter NPC");
-assert(cfg.includes("bacharel"), "Bacharel de Cananéia NPC");
-assert(cfg.includes("Fronteira"), "frontier pitch");
 assert(fs.existsSync("src/js/npcs.js"), "npcs module");
+assert(!distHtml.includes("Cananéia"), "splash must not mention Cananéia");
+assert(!distHtml.includes("Único jogável"), "no playable-only blurb on splash");
 
 const audioFrontier = fs.readFileSync("src/js/audio.js", "utf8");
 assert(audioFrontier.includes("_trailDrum"), "frontier drum pulse");
