@@ -191,7 +191,7 @@ export const CONFIG = {
   enemies: [],
 
   audio: {
-    master: 0.52,
+    master: 0.32,
     rain: true,
     wind: true,
     river: true,
