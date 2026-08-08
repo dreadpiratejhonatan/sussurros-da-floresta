@@ -245,10 +245,14 @@ class Game {
           this._refreshBars();
         }
         this.audio.loreChime();
-        this.hud.showBalloon(npc.cfg.name, npc.cfg.line, 4200);
-        setTimeout(() => {
-          this.hud.showToast(`${npc.cfg.title}: ${npc.cfg.fact}`, 7000);
-        }, 900);
+        // One story panel at a time — longer read time, no toast/balloon stack
+        this.hud.showChronicle({
+          name: npc.cfg.name,
+          line: npc.cfg.line,
+          fact: `${npc.cfg.title}: ${npc.cfg.fact}`,
+          lineMs: 11000,
+          factMs: 18000,
+        });
       }
       return;
     }
@@ -304,17 +308,15 @@ class Game {
     this.animals.update(this._runTime, dt);
     this.npcs.update(this._runTime, dt);
 
-    // Day / night cycle (readable daylight bias) + seasons / weather
+    // Full day/night cycle (0 = night, 1 = day) + seasons / weather
     const dayPhase =
-      0.55 +
-      0.45 *
-        (0.5 +
-          0.5 *
-            Math.sin(
-              (this._runTime / (CONFIG.world.dayLengthSec / this.difficulty.dayMult)) *
-                Math.PI *
-                2
-            ));
+      0.5 +
+      0.5 *
+        Math.sin(
+          (this._runTime / (CONFIG.world.dayLengthSec / this.difficulty.dayMult)) *
+            Math.PI *
+            2
+        );
     this.climate.update(dt, this._runTime, dayPhase, this.player.pos);
     const climate = this.climate.state();
     this.world.update(this._runTime, dayPhase, climate);
@@ -328,12 +330,14 @@ class Game {
     });
     this.hud.setClimate(climate.hudLine);
     const climateToast = this.climate.consumeToast();
-    if (climateToast) this.hud.showToast(climateToast.text, climateToast.ms);
+    if (climateToast && !this.hud.isStoryBusy()) {
+      this.hud.showToast(climateToast.text, climateToast.ms);
+    }
 
     this._handleInteract();
 
     this._whisperTimer -= dt;
-    if (this._whisperTimer <= 0 && !this.hud.balloonVisible()) {
+    if (this._whisperTimer <= 0 && !this.hud.balloonVisible() && !this.hud.isStoryBusy()) {
       const skin = getSkin(this.save.data.skinId);
       const lines = [
         "A mata guarda nomes anteriores ao mapa.",

@@ -93,8 +93,8 @@ export class Player {
     const look = input.consumeLook();
     this.yaw -= look.dx * CONFIG.mouseSens;
     this.pitch -= look.dy * CONFIG.mouseSens;
-    // Look up/down with the head — keep range natural (no camera diving into ground)
-    this.pitch = Math.max(-0.7, Math.min(0.55, this.pitch));
+    // Look up/down — enough down angle to see the forest floor; camera stays above ground
+    this.pitch = Math.max(-1.2, Math.min(0.65, this.pitch));
 
     this._fwd.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
     this._right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -173,11 +173,11 @@ export class Player {
     const eyeY = feetY + 1.55;
     this._lookTarget.set(
       this.pos.x - Math.sin(this.yaw) * aim,
-      eyeY + Math.sin(this.pitch) * aim * 0.9,
+      eyeY + Math.sin(this.pitch) * aim,
       this.pos.z - Math.cos(this.yaw) * aim
     );
-    // Never aim below the forest floor
-    this._lookTarget.y = Math.max(feetY + 0.2, this._lookTarget.y);
+    // Allow aiming at the ground in front; never bury the look point deep underground
+    this._lookTarget.y = Math.max(feetY - 2.2, this._lookTarget.y);
     this.camera.lookAt(this._lookTarget);
   }
 }
