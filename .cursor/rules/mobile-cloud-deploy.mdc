@@ -1,13 +1,13 @@
 ---
-description: Cursor mobile / Cloud Agent → auto-merge → HostGator deploy (same as snow / amarelinho)
+description: Cursor mobile / Cloud Agent → auto-merge → HostGator deploy (same as snow)
 alwaysApply: true
 ---
 
 # Mobile + deploy pipeline
 
-This repo mirrors Neve Selvagem (`snow`) and Amarelinho for phone editing:
-
-- Cloud Agent work must land on a **`cursor/*`** branch with a PR to **`develop`**.
-- **Auto-merge Cursor PRs** merges after CI and dispatches **Deploy HostGator** + **Deploy GitHub Pages**.
-- When the user asks to ship / deploy / “manda pro ar”, finish with PR (cloud) or commit+push to `develop` (local), bump `SDF_BUILD`, and confirm Actions.
+- Cloud Agent work on **`cursor/*`** with PR to **`develop`**.
+- Auto-merge after CI → **Deploy HostGator** + **Deploy GitHub Pages**.
+- Bump `CACHE` / `SDF_BUILD` / `?v=` (`b002`…) on visible ships.
+- Never commit secrets or the private game recipe.
+- HostGator package must not overwrite live `data/*.json`.
 - See `AGENTS.md` and `docs/MOBILE-AUTO-PROD.md`.

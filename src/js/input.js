@@ -7,18 +7,26 @@ export class Input {
     this.locked = false;
     this.interactPressed = false;
     this.pausePressed = false;
+    this.cameraTogglePressed = false;
     this.stickX = 0;
     this.stickY = 0;
+    this.demo = false;
+    /** When false, ignore gameplay input and do not steal pointer lock. */
+    this.enabled = true;
 
     window.addEventListener("keydown", (e) => {
+      if (!this.enabled) return;
+      if (e.code === "Tab") e.preventDefault();
       this.keys.add(e.code);
       if (e.code === "KeyE") this.interactPressed = true;
       if (e.code === "Escape") this.pausePressed = true;
+      if (e.code === "KeyV" || e.code === "KeyC") this.cameraTogglePressed = true;
     });
     window.addEventListener("keyup", (e) => this.keys.delete(e.code));
 
     canvas.addEventListener("click", () => {
-      if (!this.locked) canvas.requestPointerLock?.();
+      if (!this.enabled || this.locked || this.demo) return;
+      canvas.requestPointerLock?.();
     });
     document.addEventListener("pointerlockchange", () => {
       this.locked = document.pointerLockElement === canvas;
@@ -50,6 +58,12 @@ export class Input {
     return v;
   }
 
+  consumeCameraToggle() {
+    const v = this.cameraTogglePressed;
+    this.cameraTogglePressed = false;
+    return v;
+  }
+
   moveVector() {
     let x = this.stickX;
     let z = this.stickY;
@@ -62,6 +76,11 @@ export class Input {
       x /= len;
       z /= len;
     }
-    return { x, z, sprint: this.keys.has("ShiftLeft") || this.keys.has("ShiftRight") };
+    return {
+      x,
+      z,
+      sprint: this.keys.has("ShiftLeft") || this.keys.has("ShiftRight"),
+      jump: this.keys.has("Space"),
+    };
   }
 }

@@ -13,18 +13,30 @@ export class TouchControls {
     this.stick = document.getElementById("touch-stick");
     this.knob = document.getElementById("touch-knob");
     this.lookPad = document.getElementById("touch-look");
-    this.btn = document.getElementById("touch-interact");
-    this.root.hidden = false;
+    this.btnInteract = document.getElementById("touch-interact");
+    this.btnJump = document.getElementById("touch-jump");
+    this.btnCam = document.getElementById("touch-cam");
+    if (this.root) this.root.hidden = false;
 
     this._bindStick();
     this._bindLook();
-    this.btn?.addEventListener("pointerdown", (e) => {
+    this.btnInteract?.addEventListener("pointerdown", (e) => {
       e.preventDefault();
       this.input.interactPressed = true;
+    });
+    this.btnJump?.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      this.input.keys.add("Space");
+      setTimeout(() => this.input.keys.delete("Space"), 180);
+    });
+    this.btnCam?.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      this.input.cameraTogglePressed = true;
     });
   }
 
   _bindStick() {
+    if (!this.stick) return;
     let active = null;
     const max = 42;
     const onMove = (e) => {
@@ -39,7 +51,7 @@ export class TouchControls {
         dx = (dx / len) * max;
         dy = (dy / len) * max;
       }
-      this.knob.style.transform = `translate(${dx}px, ${dy}px)`;
+      if (this.knob) this.knob.style.transform = `translate(${dx}px, ${dy}px)`;
       this.input.stickX = dx / max;
       this.input.stickY = dy / max;
     };
@@ -47,7 +59,7 @@ export class TouchControls {
       if (active == null) return;
       if (![...e.changedTouches].some((c) => c.identifier === active)) return;
       active = null;
-      this.knob.style.transform = "translate(0,0)";
+      if (this.knob) this.knob.style.transform = "translate(0,0)";
       this.input.stickX = 0;
       this.input.stickY = 0;
     };
@@ -66,6 +78,7 @@ export class TouchControls {
   }
 
   _bindLook() {
+    if (!this.lookPad) return;
     let active = null;
     let lastX = 0;
     let lastY = 0;
@@ -86,8 +99,8 @@ export class TouchControls {
         if (active == null) return;
         const t = [...e.changedTouches].find((c) => c.identifier === active);
         if (!t) return;
-        this.input.lookDX += (t.clientX - lastX) * 1.35;
-        this.input.lookDY += (t.clientY - lastY) * 1.35;
+        this.input.lookDX += (t.clientX - lastX) * 1.4;
+        this.input.lookDY += (t.clientY - lastY) * 1.4;
         lastX = t.clientX;
         lastY = t.clientY;
       },

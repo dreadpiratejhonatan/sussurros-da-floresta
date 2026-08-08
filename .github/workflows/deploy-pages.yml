@@ -31,8 +31,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Face asset
+        run: npm run gen:face
+
       - name: Build
         run: npm run build
+        env:
+          GAME_API_BASE: ${{ secrets.GAME_API_BASE }}
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

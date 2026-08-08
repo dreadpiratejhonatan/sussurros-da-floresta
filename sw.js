@@ -1,4 +1,4 @@
-const CACHE = "sussurros-v1";
+const CACHE = "sussurros-b002";
 const ASSETS = ["./", "./index.html", "./game.js", "./styles/styles.css", "./manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {

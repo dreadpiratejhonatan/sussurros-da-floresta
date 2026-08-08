@@ -1,7 +1,7 @@
 {
   "name": "Sussurros da Floresta",
   "short_name": "Sussurros",
-  "description": "Explore a mata, ouça os sussurros e descubra o que a floresta esconde.",
+  "description": "Os primeiros povos — explore a mata e descubra todos os puzzles.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

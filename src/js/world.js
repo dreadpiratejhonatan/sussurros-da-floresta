@@ -1,137 +1,355 @@
 import * as THREE from "three";
 import { CONFIG } from "./config.js";
-
-function mulberry32(a) {
-  return function () {
-    let t = (a += 0x6d2b79f5);
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
+import { seededRand } from "./rng.js";
 
 export class World {
   constructor(scene) {
     this.scene = scene;
     this.colliders = [];
-    this.whispers = [];
+    this.puzzleMeshes = new Map();
+    this.loreMeshes = new Map();
+    this.fireflies = [];
+    this.footprints = [];
+    this.fogMult = 1;
+    this.dayMult = 1;
+    this._sun = null;
+    this._hemi = null;
     this._build();
   }
 
-  _build() {
-    const { colors } = CONFIG;
-    this.scene.background = new THREE.Color(colors.nightSky);
-    this.scene.fog = new THREE.FogExp2(colors.nightSky, 0.045);
+  setAtmosphere({ fogMult = 1, dayMult = 1 } = {}) {
+    this.fogMult = fogMult;
+    this.dayMult = dayMult;
+    if (this.scene.fog) this.scene.fog.density = 0.038 * fogMult;
+    if (this._sun) this._sun.intensity = 0.55 * dayMult;
+    if (this._hemi) this._hemi.intensity = 0.5 * dayMult;
+  }
 
-    const hemi = new THREE.HemisphereLight(0xb8d4c4, 0x1a2a1c, 0.55);
-    this.scene.add(hemi);
-    const moon = new THREE.DirectionalLight(0xcfe8d8, 0.55);
-    moon.position.set(12, 28, 8);
-    moon.castShadow = true;
-    moon.shadow.mapSize.set(1024, 1024);
-    this.scene.add(moon);
-    const fill = new THREE.PointLight(0x6aa888, 0.35, 40);
-    fill.position.set(0, 4, 0);
-    this.scene.add(fill);
+  _build() {
+    const w = CONFIG.world;
+    const { colors } = CONFIG;
+    this.scene.background = new THREE.Color(w.fog);
+    this.scene.fog = new THREE.FogExp2(w.fog, 0.038);
+
+    this._hemi = new THREE.HemisphereLight(0xb8d4c4, 0x1a2a1c, 0.5);
+    this.scene.add(this._hemi);
+    this._sun = new THREE.DirectionalLight(0xcfe8d8, 0.55);
+    this._sun.position.set(14, 30, 10);
+    this._sun.castShadow = true;
+    this._sun.shadow.mapSize.set(1024, 1024);
+    this.scene.add(this._sun);
 
     const ground = new THREE.Mesh(
-      new THREE.CircleGeometry(48, 64),
-      new THREE.MeshStandardMaterial({ color: colors.mossDeep, roughness: 0.95 })
+      new THREE.CircleGeometry(w.size, 72),
+      new THREE.MeshStandardMaterial({ color: w.ground, roughness: 0.96 })
     );
     ground.rotation.x = -Math.PI / 2;
     ground.receiveShadow = true;
     this.scene.add(ground);
 
-    const path = new THREE.Mesh(
-      new THREE.PlaneGeometry(3.2, 28),
-      new THREE.MeshStandardMaterial({ color: colors.path, roughness: 1 })
-    );
-    path.rotation.x = -Math.PI / 2;
-    path.position.set(0, 0.02, 2);
-    path.receiveShadow = true;
-    this.scene.add(path);
+    this._addRiver();
+    this._scatterProps();
+    for (const p of CONFIG.puzzles) this._addPuzzle(p);
+    for (const l of CONFIG.lore) this._addLore(l);
+    this._addFireflies();
+    this._addFootprintTrails();
+  }
 
-    const rand = mulberry32(42);
-    for (let i = 0; i < 70; i++) {
+  _addRiver() {
+    const r = CONFIG.world.river;
+    const len = r.z1 - r.z0;
+    const water = new THREE.Mesh(
+      new THREE.PlaneGeometry(r.width, len),
+      new THREE.MeshStandardMaterial({
+        color: CONFIG.colors.river,
+        roughness: 0.25,
+        metalness: 0.2,
+        transparent: true,
+        opacity: 0.85,
+      })
+    );
+    water.rotation.x = -Math.PI / 2;
+    water.position.set(r.x, 0.04, (r.z0 + r.z1) / 2);
+    this.scene.add(water);
+  }
+
+  _scatterProps() {
+    const rand = seededRand(CONFIG.world.seed);
+    const size = CONFIG.world.size;
+    const { trees, rocks, grass } = CONFIG.world.props;
+
+    for (let i = 0; i < trees; i++) {
       const ang = rand() * Math.PI * 2;
-      const dist = 6 + rand() * 38;
+      const dist = 5 + rand() * (size - 8);
       const x = Math.cos(ang) * dist;
       const z = Math.sin(ang) * dist;
-      if (Math.abs(x) < 2.2 && z > -2 && z < 18) continue;
-      this._addTree(x, z, 0.7 + rand() * 0.9, rand);
+      if (this._nearPath(x, z, 2.4)) continue;
+      if (this._nearRiver(x, z, 2.2)) continue;
+      this._addTree(x, z, 0.65 + rand() * 1.1, rand);
     }
 
-    this._addWhisperStone(0, -6, "A névoa guarda um nome antigo…");
-    this._addWhisperStone(-7, 4, "Passos leves. A floresta escuta.");
-    this._addWhisperStone(8, 10, "Siga o brilho entre as folhas.");
-    this._addClearing();
+    for (let i = 0; i < rocks; i++) {
+      const ang = rand() * Math.PI * 2;
+      const dist = 4 + rand() * (size - 10);
+      const x = Math.cos(ang) * dist;
+      const z = Math.sin(ang) * dist;
+      if (this._nearPath(x, z, 1.8)) continue;
+      this._addRock(x, z, 0.35 + rand() * 0.6);
+    }
+
+    const grassGeo = new THREE.ConeGeometry(0.08, 0.45, 3);
+    const grassMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.leaf, roughness: 1 });
+    for (let i = 0; i < grass; i++) {
+      const ang = rand() * Math.PI * 2;
+      const dist = 3 + rand() * (size - 6);
+      const blade = new THREE.Mesh(grassGeo, grassMat);
+      blade.position.set(Math.cos(ang) * dist, 0.2, Math.sin(ang) * dist);
+      blade.rotation.y = rand() * Math.PI;
+      this.scene.add(blade);
+    }
+  }
+
+  _nearPath(x, z, r) {
+    return Math.abs(x) < r && z > -2 && z < 14;
+  }
+
+  _nearRiver(x, z, r) {
+    const river = CONFIG.world.river;
+    return Math.abs(x - river.x) < river.width * 0.5 + r && z >= river.z0 - r && z <= river.z1 + r;
   }
 
   _addTree(x, z, scale, rand) {
     const group = new THREE.Group();
     group.position.set(x, 0, z);
-    const trunkH = 2.4 * scale;
+    const trunkH = 2.5 * scale;
     const trunk = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.18 * scale, 0.28 * scale, trunkH, 8),
-      new THREE.MeshStandardMaterial({ color: CONFIG.colors.bark, roughness: 0.9 })
+      new THREE.CylinderGeometry(0.16 * scale, 0.26 * scale, trunkH, 7),
+      new THREE.MeshStandardMaterial({ color: CONFIG.colors.bark, roughness: 0.92 })
     );
     trunk.position.y = trunkH / 2;
     trunk.castShadow = true;
     group.add(trunk);
-
-    const leafMat = new THREE.MeshStandardMaterial({
-      color: CONFIG.colors.leaf,
-      roughness: 0.85,
-    });
-    const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.4 * scale, 3.2 * scale, 8), leafMat);
-    canopy.position.y = trunkH + 1.1 * scale;
+    const leafMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.leaf, roughness: 0.88 });
+    const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.35 * scale, 3.1 * scale, 7), leafMat);
+    canopy.position.y = trunkH + 1.05 * scale;
     canopy.castShadow = true;
     group.add(canopy);
-    if (rand() > 0.45) {
-      const mid = new THREE.Mesh(new THREE.ConeGeometry(1.1 * scale, 2.4 * scale, 8), leafMat);
-      mid.position.y = trunkH + 0.2 * scale;
-      mid.castShadow = true;
+    if (rand() > 0.4) {
+      const mid = new THREE.Mesh(new THREE.ConeGeometry(1.05 * scale, 2.3 * scale, 7), leafMat);
+      mid.position.y = trunkH + 0.15 * scale;
       group.add(mid);
     }
     this.scene.add(group);
-    this.colliders.push({ x, z, r: 0.45 * scale });
+    this.colliders.push({ x, z, r: 0.42 * scale });
   }
 
-  _addWhisperStone(x, z, text) {
-    const stone = new THREE.Mesh(
-      new THREE.DodecahedronGeometry(0.55, 0),
-      new THREE.MeshStandardMaterial({
-        color: 0x5a6a5e,
-        emissive: CONFIG.colors.glow,
-        emissiveIntensity: 0.18,
-        roughness: 0.7,
-      })
+  _addRock(x, z, scale) {
+    const rock = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(scale, 0),
+      new THREE.MeshStandardMaterial({ color: 0x4a554c, roughness: 0.9 })
     );
-    stone.position.set(x, 0.45, z);
-    stone.castShadow = true;
-    this.scene.add(stone);
+    rock.position.set(x, scale * 0.45, z);
+    rock.rotation.set(0.2, 0.4, 0.1);
+    rock.castShadow = true;
+    this.scene.add(rock);
+    this.colliders.push({ x, z, r: scale * 0.7 });
+  }
+
+  _addPuzzle(p) {
+    const group = new THREE.Group();
+    group.position.set(p.x, 0, p.z);
+
+    let mesh;
+    if (p.id.includes("hub")) {
+      mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.35, 0.55, 2.2, 8),
+        new THREE.MeshStandardMaterial({
+          color: 0x5a6a5e,
+          emissive: CONFIG.colors.glow,
+          emissiveIntensity: 0.2,
+          roughness: 0.65,
+        })
+      );
+      mesh.position.y = 1.1;
+    } else if (p.id.includes("river")) {
+      mesh = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(0.7, 0),
+        new THREE.MeshStandardMaterial({
+          color: 0x4a6a72,
+          emissive: CONFIG.colors.tech,
+          emissiveIntensity: 0.25,
+          roughness: 0.55,
+        })
+      );
+      mesh.position.y = 0.55;
+    } else if (p.id.includes("roots")) {
+      mesh = new THREE.Mesh(
+        new THREE.TorusGeometry(0.7, 0.18, 8, 16),
+        new THREE.MeshStandardMaterial({
+          color: 0x3a5a28,
+          emissive: CONFIG.colors.glow,
+          emissiveIntensity: 0.3,
+          roughness: 0.7,
+        })
+      );
+      mesh.rotation.x = Math.PI / 2;
+      mesh.position.y = 0.35;
+    } else if (p.id.includes("mirror")) {
+      mesh = new THREE.Mesh(
+        new THREE.CircleGeometry(0.7, 24),
+        new THREE.MeshStandardMaterial({
+          color: 0x88aaaa,
+          emissive: CONFIG.colors.tech,
+          emissiveIntensity: 0.35,
+          metalness: 0.8,
+          roughness: 0.15,
+          side: THREE.DoubleSide,
+        })
+      );
+      mesh.position.y = 1.1;
+    } else {
+      mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1.1, 1.6, 0.25),
+        new THREE.MeshStandardMaterial({
+          color: 0x3a2a18,
+          emissive: CONFIG.colors.glow,
+          emissiveIntensity: 0.15,
+          roughness: 0.8,
+        })
+      );
+      mesh.position.y = 0.85;
+    }
+    mesh.castShadow = true;
+    group.add(mesh);
 
     const ring = new THREE.Mesh(
-      new THREE.RingGeometry(0.7, 0.95, 24),
+      new THREE.RingGeometry(0.9, 1.15, 28),
       new THREE.MeshBasicMaterial({
         color: CONFIG.colors.glow,
         transparent: true,
-        opacity: 0.35,
+        opacity: 0.4,
         side: THREE.DoubleSide,
       })
     );
     ring.rotation.x = -Math.PI / 2;
-    ring.position.set(x, 0.05, z);
-    this.scene.add(ring);
+    ring.position.y = 0.06;
+    group.add(ring);
 
-    this.whispers.push({ x, z, text, mesh: stone });
-    this.colliders.push({ x, z, r: 0.55 });
+    this.scene.add(group);
+    this.puzzleMeshes.set(p.id, { group, mesh, ring, solved: false });
+    this.colliders.push({ x: p.x, z: p.z, r: 0.7 });
   }
 
-  _addClearing() {
-    const glow = new THREE.PointLight(CONFIG.colors.glow, 1.1, 12);
-    glow.position.set(0, 2.2, -6);
-    this.scene.add(glow);
+  _addLore(l) {
+    const group = new THREE.Group();
+    group.position.set(l.x, 0, l.z);
+    const slab = new THREE.Mesh(
+      new THREE.BoxGeometry(0.7, 0.9, 0.12),
+      new THREE.MeshStandardMaterial({
+        color: 0x4a3a28,
+        emissive: 0x3a6048,
+        emissiveIntensity: 0.2,
+        roughness: 0.85,
+      })
+    );
+    slab.position.y = 0.5;
+    slab.castShadow = true;
+    group.add(slab);
+    const rune = new THREE.Mesh(
+      new THREE.RingGeometry(0.12, 0.2, 5),
+      new THREE.MeshBasicMaterial({
+        color: CONFIG.colors.tech,
+        transparent: true,
+        opacity: 0.7,
+        side: THREE.DoubleSide,
+      })
+    );
+    rune.position.set(0, 0.55, 0.07);
+    group.add(rune);
+    this.scene.add(group);
+    this.loreMeshes.set(l.id, { group, slab, rune, read: false });
+    this.colliders.push({ x: l.x, z: l.z, r: 0.45 });
+  }
+
+  _addFireflies() {
+    const n = CONFIG.world.props.fireflies || 40;
+    const rand = seededRand(CONFIG.world.seed + 99);
+    const geo = new THREE.SphereGeometry(0.04, 6, 6);
+    for (let i = 0; i < n; i++) {
+      const mat = new THREE.MeshBasicMaterial({
+        color: i % 3 === 0 ? CONFIG.colors.tech : CONFIG.colors.glow,
+        transparent: true,
+        opacity: 0.85,
+      });
+      const m = new THREE.Mesh(geo, mat);
+      const ang = rand() * Math.PI * 2;
+      const dist = 4 + rand() * (CONFIG.world.size - 10);
+      m.position.set(Math.cos(ang) * dist, 0.6 + rand() * 2.2, Math.sin(ang) * dist);
+      this.scene.add(m);
+      this.fireflies.push({
+        mesh: m,
+        phase: rand() * Math.PI * 2,
+        speed: 0.6 + rand() * 1.2,
+        radius: 0.4 + rand() * 0.8,
+        base: m.position.clone(),
+      });
+    }
+  }
+
+  _addFootprintTrails() {
+    // Soft glowing prints from spawn toward each mystery (subtle breadcrumbs)
+    const start = { x: 0, z: 10 };
+    const geo = new THREE.CircleGeometry(0.12, 8);
+    for (const p of CONFIG.puzzles) {
+      const steps = 6;
+      for (let i = 1; i <= steps; i++) {
+        const t = i / (steps + 2);
+        const x = start.x + (p.x - start.x) * t + Math.sin(i * 1.7) * 0.35;
+        const z = start.z + (p.z - start.z) * t + Math.cos(i * 1.3) * 0.35;
+        const m = new THREE.Mesh(
+          geo,
+          new THREE.MeshBasicMaterial({
+            color: CONFIG.colors.spirit,
+            transparent: true,
+            opacity: 0.22,
+          })
+        );
+        m.rotation.x = -Math.PI / 2;
+        m.position.set(x, 0.03, z);
+        this.scene.add(m);
+        this.footprints.push(m);
+      }
+    }
+  }
+
+  markPuzzleSolved(id) {
+    const entry = this.puzzleMeshes.get(id);
+    if (!entry) return;
+    entry.solved = true;
+    entry.mesh.material.emissiveIntensity = 0.55;
+    entry.ring.material.opacity = 0.75;
+    entry.ring.material.color.set(CONFIG.colors.tech);
+  }
+
+  markLoreRead(id) {
+    const entry = this.loreMeshes.get(id);
+    if (!entry) return;
+    entry.read = true;
+    entry.rune.material.color.set(CONFIG.colors.glow);
+    entry.slab.material.emissiveIntensity = 0.45;
+  }
+
+  nearestLore(x, z, maxDist) {
+    let best = null;
+    let bestD = maxDist;
+    for (const l of CONFIG.lore) {
+      const d = Math.hypot(x - l.x, z - l.z);
+      if (d < bestD) {
+        bestD = d;
+        best = l;
+      }
+    }
+    return best;
   }
 
   floorHeight() {
@@ -144,27 +362,50 @@ export class World {
       const dz = z - c.z;
       if (dx * dx + dz * dz < (c.r + radius) * (c.r + radius)) return true;
     }
-    if (Math.hypot(x, z) > 46) return true;
+    if (Math.hypot(x, z) > CONFIG.world.size - 1.5) return true;
     return false;
   }
 
-  nearestWhisper(x, z, maxDist) {
+  nearestPuzzle(x, z, maxDist) {
     let best = null;
     let bestD = maxDist;
-    for (const w of this.whispers) {
-      const d = Math.hypot(x - w.x, z - w.z);
+    for (const p of CONFIG.puzzles) {
+      const d = Math.hypot(x - p.x, z - p.z);
       if (d < bestD) {
         bestD = d;
-        best = w;
+        best = p;
       }
     }
     return best;
   }
 
-  update(t) {
-    for (const w of this.whispers) {
-      w.mesh.position.y = 0.45 + Math.sin(t * 1.6 + w.x) * 0.06;
-      w.mesh.rotation.y = t * 0.35;
+  update(t, dayPhase) {
+    const sky = new THREE.Color(CONFIG.world.skyNight).lerp(
+      new THREE.Color(CONFIG.world.skyDay),
+      dayPhase * this.dayMult
+    );
+    this.scene.background.copy(sky);
+    if (this.scene.fog) this.scene.fog.color.copy(sky);
+    // Night thickens fog slightly for mystery
+    if (this.scene.fog) {
+      this.scene.fog.density = 0.034 * this.fogMult + (1 - dayPhase) * 0.012;
+    }
+
+    for (const [, entry] of this.puzzleMeshes) {
+      entry.mesh.rotation.y = t * 0.25;
+      entry.ring.scale.setScalar(1 + Math.sin(t * 2) * 0.04);
+    }
+    for (const [, entry] of this.loreMeshes) {
+      entry.rune.rotation.z = t * 0.4;
+    }
+    for (const f of this.fireflies) {
+      f.mesh.position.x = f.base.x + Math.cos(t * f.speed + f.phase) * f.radius;
+      f.mesh.position.z = f.base.z + Math.sin(t * f.speed * 0.8 + f.phase) * f.radius;
+      f.mesh.position.y = f.base.y + Math.sin(t * f.speed * 1.4 + f.phase) * 0.35;
+      f.mesh.material.opacity = 0.35 + (1 - dayPhase) * 0.5 + Math.sin(t * 3 + f.phase) * 0.15;
+    }
+    for (const fp of this.footprints) {
+      fp.material.opacity = 0.12 + (1 - dayPhase) * 0.18;
     }
   }
 }

@@ -1,4 +1,5 @@
-# Sobe release/hostgator-sussurros-da-floresta/ na HostGator via FTP → jhonatanribeiro.com/sussurros-da-floresta/
+# Sobe release/hostgator-sussurros-da-floresta/ → jhonatanribeiro.com/sussurros-da-floresta/
+# Nunca sobrescreve data vivos no servidor (exclude + pacote sem leaderboard/tickets).
 name: Deploy HostGator
 
 on:
@@ -26,8 +27,13 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Face asset
+        run: npm run gen:face
+
       - name: Build
         run: npm run build
+        env:
+          GAME_API_BASE: ${{ secrets.GAME_API_BASE }}
 
       - name: FTP upload
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -36,9 +42,14 @@ jobs:
           username: ${{ secrets.HOSTGATOR_FTP_USER }}
           password: ${{ secrets.HOSTGATOR_FTP_PASSWORD }}
           local-dir: ./release/hostgator-sussurros-da-floresta/
-          # Pasta remota do Sussurros — só no secret HOSTGATOR_FTP_DIR
           server-dir: ${{ secrets.HOSTGATOR_FTP_DIR }}
           dangerous-clean-slate: false
           exclude: |
             **/.git*
             **/.git*/**
+            **/data/leaderboard.json
+            **/data/tickets.json
+            **/data/tickets-rate.json
+            **/data/tickets-admin.key
+            **/data/rooms/**
+            **/.ftp-deploy-sync-state.json

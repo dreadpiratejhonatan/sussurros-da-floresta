@@ -1,4 +1,3 @@
-# CI — build do Sussurros da Floresta
 name: CI
 
 on:
@@ -17,10 +16,5 @@ jobs:
           node-version: "22"
           cache: npm
       - run: npm ci
-      - run: npm run build
-      - name: Smoke — artefato HostGator
-        run: |
-          test -f release/hostgator-sussurros-da-floresta/index.html
-          test -f release/hostgator-sussurros-da-floresta/game.js
-          test -f release/hostgator-sussurros-da-floresta/styles/styles.css
-          grep -q 'SDF_BUILD' release/hostgator-sussurros-da-floresta/index.html
+      - run: npm run gen:face
+      - run: npm run test:smoke

@@ -6,3 +6,7 @@ release/
 .env
 .env.*
 assets/ref/
+data/leaderboard.json
+data/tickets.json
+data/tickets-rate.json
+data/tickets-admin.key

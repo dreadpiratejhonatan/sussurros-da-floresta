@@ -1,0 +1,5 @@
+# Bloqueia listagem; JSON só via PHP da API.
+Options -Indexes
+<FilesMatch "\.(json|key)$">
+  Require all denied
+</FilesMatch>
