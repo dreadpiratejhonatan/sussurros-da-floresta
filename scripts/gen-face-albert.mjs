@@ -64,15 +64,13 @@ fill(152, 132, 170, 144, 72, 48, 32);
 fill(98, 134, 104, 140, 220, 220, 210);
 fill(164, 134, 170, 140, 220, 220, 210);
 
-// thick black rectangular glasses
+// prescription glasses frame only — lenses stay clear so eyes show
 fill(64, 118, 192, 126, 18, 18, 20); // top rim
 fill(64, 152, 192, 160, 18, 18, 20); // bottom rim
 fill(64, 118, 72, 160, 18, 18, 20); // left
 fill(184, 118, 192, 160, 18, 18, 20); // right
 fill(124, 130, 132, 148, 18, 18, 20); // bridge
-// lens tint (subtle)
-fill(74, 126, 120, 152, 40, 50, 70, 90);
-fill(136, 126, 182, 152, 40, 50, 70, 90);
+// no lens tint — eyes remain visible through clear glass
 
 // nose
 fill(116, 148, 140, 178, 170, 128, 98);

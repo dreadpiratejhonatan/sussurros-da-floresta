@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b009"), "dist HTML missing cache bust b009");
-assert(hostHtml.includes("?v=b009"), "host HTML missing cache bust b009");
+assert(distHtml.includes("?v=b010"), "dist HTML missing cache bust b010");
+assert(hostHtml.includes("?v=b010"), "host HTML missing cache bust b010");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -62,7 +62,13 @@ assert(audioSrc.includes("_river"), "river bed in audio");
 const playerSrc = fs.readFileSync("src/js/player.js", "utf8");
 assert(playerSrc.includes("_bodyYaw"), "body facing separate from camera yaw");
 assert(playerSrc.includes("shortestAngleDelta"), "smooth body turn");
-assert(playerSrc.includes("Math.sin(this.pitch)"), "third-person pitch look");
+assert(playerSrc.includes("setAvatarLook"), "head/neck look sync");
+assert(playerSrc.includes("camY"), "camera stays above ground");
+
+const skinsSrc = fs.readFileSync("src/js/skins.js", "utf8");
+assert(skinsSrc.includes("headRoot"), "head root joint");
+assert(skinsSrc.includes("setAvatarLook"), "setAvatarLook export");
+assert(skinsSrc.includes("opacity: 0.1"), "clear glasses lenses");
 
 const worldSrc = fs.readFileSync("src/js/world.js", "utf8");
 assert(worldSrc.includes("_fill"), "fill light for readability");

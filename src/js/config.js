@@ -39,7 +39,7 @@ export const CONFIG = {
       skin: "#c49a76",
       accent: "#e85a2a",
       personality: "Explorador da mata; segue os sussurros dos primeiros povos.",
-      blurb: "Óculos pretos, barba, jaqueta azul com zíper laranja e mochila — o protagonista da floresta.",
+      blurb: "Óculos de grau (lentes claras), barba, jaqueta azul com zíper laranja e mochila — o protagonista da floresta.",
     },
   },
   skinOrder: ["albert"],
