@@ -55,20 +55,20 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   const wrap = new THREE.Color(skin.shirt);
   const spirit = new THREE.Color(skin.accent);
 
-  const skinMat = mat(skinTone, { roughness: 0.82 });
-  const clothMat = mat(cloth, { roughness: 0.92 });
-  const wrapMat = mat(wrap, { roughness: 0.88 });
-  const leatherMat = mat(0x2e1c10, { roughness: 0.9 });
-  const hairMat = mat(0x0e0906, { roughness: 0.95 });
-  const woodMat = mat(0x5a3a1e, { roughness: 0.8 });
-  const clayMat = mat(0xe8dcc0, { roughness: 0.75 });
+  const skinMat = mat(skinTone, { roughness: 0.72 });
+  const clothMat = mat(cloth, { roughness: 0.85 });
+  const wrapMat = mat(wrap, { roughness: 0.8 });
+  const leatherMat = mat(0x3a2618, { roughness: 0.85 });
+  const hairMat = mat(0x1a100c, { roughness: 0.9 });
+  const woodMat = mat(0x6a4a28, { roughness: 0.75 });
+  const clayMat = mat(0xf0e4c8, { roughness: 0.7 });
   const spiritMat = mat(spirit, {
-    roughness: 0.55,
+    roughness: 0.5,
     emissive: spirit,
-    emissiveIntensity: 0.12,
+    emissiveIntensity: 0.18,
   });
-  const ochreMat = mat(0xb03a1e, { roughness: 0.7 });
-  const featherMat = mat(0xa84e22, { roughness: 0.7 });
+  const ochreMat = mat(0xc44a24, { roughness: 0.65 });
+  const featherMat = mat(0xb85828, { roughness: 0.65 });
 
   // hips + wrapped skirt / tunic hem
   const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.14, 4, 10), clothMat), castShadow);
@@ -232,6 +232,14 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   const amulet = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 10), spiritMat), castShadow);
   amulet.position.set(0, 1.42, 0.16);
   root.add(amulet);
+
+  // Warm key light on the body so Albert never disappears into fog
+  const key = new THREE.PointLight(0xffe8c8, 0.65, 5.5, 2);
+  key.position.set(0.35, 1.7, 0.9);
+  root.add(key);
+  const rim = new THREE.PointLight(0xb8dcc8, 0.28, 4.2, 2);
+  rim.position.set(-0.4, 1.5, -0.7);
+  root.add(rim);
 
   root.userData.skinId = skin.id;
   root.userData.joints = { leftLeg, rightLeg, leftArm, rightArm };

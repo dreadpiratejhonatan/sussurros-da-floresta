@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b007"), "dist HTML missing cache bust b007");
-assert(hostHtml.includes("?v=b007"), "host HTML missing cache bust b007");
+assert(distHtml.includes("?v=b008"), "dist HTML missing cache bust b008");
+assert(hostHtml.includes("?v=b008"), "host HTML missing cache bust b008");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -61,5 +61,10 @@ assert(audioSrc.includes("_river"), "river bed in audio");
 const playerSrc = fs.readFileSync("src/js/player.js", "utf8");
 assert(playerSrc.includes("_bodyYaw"), "body facing separate from camera yaw");
 assert(playerSrc.includes("shortestAngleDelta"), "smooth body turn");
+assert(playerSrc.includes("Math.sin(this.pitch)"), "third-person pitch look");
+
+const worldSrc = fs.readFileSync("src/js/world.js", "utf8");
+assert(worldSrc.includes("_fill"), "fill light for readability");
+assert(worldSrc.includes("0.016"), "lighter fog density");
 
 console.log("SMOKE OK");

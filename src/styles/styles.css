@@ -187,45 +187,49 @@ html, body {
 
 .hud__brand {
   position: absolute;
-  top: 16px;
-  left: 18px;
+  top: 14px;
+  left: 16px;
   font-family: "Cormorant Garamond", serif;
-  font-size: 18px;
-  letter-spacing: 0.14em;
-  color: var(--glow);
+  font-size: 17px;
+  letter-spacing: 0.12em;
+  color: #e8fff0;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 .hud__objective, .hud__progress {
   position: absolute;
-  left: 18px;
-  max-width: min(420px, 70vw);
-  padding: 8px 12px;
-  background: var(--panel);
+  left: 16px;
+  max-width: min(360px, 62vw);
+  padding: 7px 11px;
+  background: rgba(10, 22, 16, 0.55);
   border-left: 3px solid var(--glow);
-  border-radius: 6px;
-  font-size: 13px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
+  color: #eef8f1;
+  backdrop-filter: blur(6px);
 }
 
-.hud__objective { top: 48px; }
+.hud__objective { top: 44px; }
 .hud__progress {
-  top: 92px;
-  border-left-color: var(--tech);
-  color: var(--tech);
+  top: 84px;
+  border-left-color: #8fd0ff;
+  color: #cfefff;
 }
 
 .hud__lore {
   position: absolute;
-  left: 18px;
-  top: 128px;
-  max-width: min(420px, 70vw);
-  padding: 6px 12px;
-  background: var(--panel);
-  border-left: 3px solid rgba(212, 255, 232, 0.55);
-  border-radius: 6px;
-  font-size: 12px;
+  left: 16px;
+  top: 118px;
+  max-width: min(360px, 62vw);
+  padding: 5px 10px;
+  background: rgba(10, 22, 16, 0.45);
+  border-left: 3px solid rgba(212, 255, 232, 0.65);
+  border-radius: 8px;
+  font-size: 11px;
   font-weight: 600;
-  color: rgba(212, 255, 232, 0.9);
+  color: rgba(230, 255, 240, 0.95);
+  backdrop-filter: blur(6px);
 }
 
 .hud__pause {
@@ -262,7 +266,12 @@ html, body {
   height: 6px;
   margin: -3px 0 0 -3px;
   border-radius: 50%;
-  background: rgba(168, 230, 192, 0.85);
+  background: rgba(232, 255, 240, 0.9);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+}
+
+.crosshair[hidden] {
+  display: none !important;
 }
 
 .prompt, .toast, .balloon {
@@ -316,8 +325,9 @@ html, body {
 }
 
 .touch__look {
+  /* Right 2/3 of screen — drag up/down to look, left/right to turn */
   position: absolute;
-  inset: 0 0 0 35%;
+  inset: 0 0 0 28%;
   pointer-events: auto;
 }
 
@@ -363,5 +373,13 @@ html, body {
 
 @media (max-width: 720px) {
   .hud__hint { display: none; }
-  .hud__brand { font-size: 14px; }
+  .hud__brand { font-size: 13px; letter-spacing: 0.1em; }
+  .hud__objective, .hud__progress, .hud__lore {
+    max-width: 58vw;
+    font-size: 11px;
+    padding: 6px 9px;
+  }
+  .hud__objective { top: 40px; }
+  .hud__progress { top: 76px; }
+  .hud__lore { top: 108px; }
 }
