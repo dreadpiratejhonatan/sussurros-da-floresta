@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { CONFIG } from "./config.js";
-import { animateAvatar, buildAvatar } from "./skins.js";
+import { animateAvatar, buildAvatar, setAvatarLook } from "./skins.js";
 
 function shortestAngleDelta(from, to) {
   let d = to - from;
@@ -14,11 +14,11 @@ export class Player {
     this.camera = camera;
     this.world = world;
     this.yaw = Math.PI;
-    this.pitch = -0.12;
+    this.pitch = -0.08;
     this.pos = new THREE.Vector3(0, CONFIG.eyeHeight, 10);
     this.velY = 0;
     this.onGround = true;
-    this.mode = "third"; // visible 3D by default
+    this.mode = "third";
     this.moveMult = 1;
     this.avatar = buildAvatar(skinId);
     this.avatar.visible = true;
@@ -29,7 +29,6 @@ export class Player {
     this._syncCrosshair();
     this._fwd = new THREE.Vector3();
     this._right = new THREE.Vector3();
-    this._camOffset = new THREE.Vector3();
     this._lookTarget = new THREE.Vector3();
     this._wish = new THREE.Vector3();
     this._moving = false;
@@ -61,15 +60,12 @@ export class Player {
     if (el) el.hidden = this.mode !== "first";
   }
 
-  /** Hide head/face in 1st person so it doesn't clip the camera; keep body optional off. */
   _setFirstPersonBodyVisible(showFull) {
     this.avatar.traverse((obj) => {
       if (!obj.isMesh && !obj.isLight) return;
-      // In first person, hide whole avatar (camera in head). Third: show all.
       obj.visible = showFull;
     });
     if (!showFull) {
-      // keep avatar group "there" for anim state, but invisible
       this.avatar.visible = false;
     } else {
       this.avatar.visible = true;
@@ -81,7 +77,7 @@ export class Player {
 
   reset() {
     this.yaw = Math.PI;
-    this.pitch = -0.12;
+    this.pitch = -0.08;
     this.pos.set(0, CONFIG.eyeHeight, 10);
     this.velY = 0;
     this.mode = "third";
@@ -97,8 +93,8 @@ export class Player {
     const look = input.consumeLook();
     this.yaw -= look.dx * CONFIG.mouseSens;
     this.pitch -= look.dy * CONFIG.mouseSens;
-    // Allow looking up and down freely (mobile drag + mouse)
-    this.pitch = Math.max(-1.05, Math.min(0.85, this.pitch));
+    // Look up/down with the head — keep range natural (no camera diving into ground)
+    this.pitch = Math.max(-0.7, Math.min(0.55, this.pitch));
 
     this._fwd.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
     this._right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -134,7 +130,7 @@ export class Player {
       this.onGround = false;
     }
 
-    // Face walk direction (not the camera) so Albert stops moonwalking
+    // Body faces walk direction; when idle, ease toward look facing
     let targetBody = this.yaw + Math.PI;
     if (this._moving) {
       targetBody = Math.atan2(this._wish.x, this._wish.z);
@@ -143,6 +139,12 @@ export class Player {
     this._bodyYaw += shortestAngleDelta(this._bodyYaw, targetBody) * Math.min(1, dt * turnSpeed);
     this.avatar.position.set(this.pos.x, this.pos.y - CONFIG.eyeHeight, this.pos.z);
     this.avatar.rotation.y = this._bodyYaw;
+
+    // Head/neck look with camera (relative to body)
+    const lookFacing = this.yaw + Math.PI;
+    const headYaw = shortestAngleDelta(this._bodyYaw, lookFacing);
+    setAvatarLook(this.avatar, headYaw, this.pitch, dt);
+
     animateAvatar(this.avatar, dt, this._moving, this._sprint);
     this._applyCamera();
   }
@@ -156,22 +158,26 @@ export class Player {
       return;
     }
 
-    // Third person orbit: pitch looks up/down at the world (not locked to Albert's back)
+    // Stable third-person follow: camera stays above ground.
+    // Looking up/down is the head + aim point — not burying the camera.
     const dist = CONFIG.thirdPersonDist;
-    const pivotY = this.pos.y - CONFIG.eyeHeight + 1.4;
-    const cosP = Math.cos(this.pitch);
-    const sinP = Math.sin(this.pitch);
+    const feetY = this.pos.y - CONFIG.eyeHeight;
+    const camY = feetY + 1.9;
     this.camera.position.set(
-      this.pos.x + Math.sin(this.yaw) * dist * Math.max(0.35, cosP),
-      pivotY - sinP * dist * 0.9 + 0.25,
-      this.pos.z + Math.cos(this.yaw) * dist * Math.max(0.35, cosP)
+      this.pos.x + Math.sin(this.yaw) * dist,
+      camY,
+      this.pos.z + Math.cos(this.yaw) * dist
     );
-    const aim = 7;
+
+    const aim = 9;
+    const eyeY = feetY + 1.55;
     this._lookTarget.set(
-      this.pos.x - Math.sin(this.yaw) * aim * Math.max(0.25, cosP),
-      pivotY - sinP * aim,
-      this.pos.z - Math.cos(this.yaw) * aim * Math.max(0.25, cosP)
+      this.pos.x - Math.sin(this.yaw) * aim,
+      eyeY + Math.sin(this.pitch) * aim * 0.9,
+      this.pos.z - Math.cos(this.yaw) * aim
     );
+    // Never aim below the forest floor
+    this._lookTarget.y = Math.max(feetY + 0.2, this._lookTarget.y);
     this.camera.lookAt(this._lookTarget);
   }
 }

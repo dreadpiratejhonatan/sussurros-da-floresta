@@ -1,5 +1,12 @@
 # Changelog
 
+## b010 — 2026-08-08
+
+- Câmera 3ª pessoa fica acima do chão; olhar cima/baixo é cabeça/pescoço + ponto de mira
+- Pescoço/cabeça sincronizados com a câmera (esquerda/direita e cima/baixo)
+- Óculos de grau com lentes transparentes (olhos visíveis)
+- Cache `b010`
+
 ## b009 — 2026-08-08
 
 - Albert redesenhado a partir da foto do protagonista: óculos, barba, jaqueta azul, zíper laranja, mochila

@@ -43,7 +43,8 @@ function shadowed(mesh, on) {
 
 /**
  * Albert — protagonista de Sussurros da Floresta.
- * Referência: óculos pretos, barba, jaqueta azul com zíper laranja, mochila.
+ * Óculos de grau (lentes transparentes), barba, jaqueta azul, zíper laranja, mochila.
+ * Cabeça/pescoço em grupo próprio para olhar com a câmera.
  */
 export function buildAvatar(skinId, { castShadow = true } = {}) {
   const skin = getSkin(skinId);
@@ -63,8 +64,9 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   const bootMat = mat(0x1a1816, { roughness: 0.9 });
   const hairMat = mat(0x2a1c14, { roughness: 0.88 });
   const packMat = mat(0x4a4638, { roughness: 0.82 });
-  const glassMat = mat(0x141418, { roughness: 0.35, metalness: 0.4 });
-  const lensMat = mat(0x6a8498, { roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.35 });
+  const glassMat = mat(0x141418, { roughness: 0.35, metalness: 0.45 });
+  // Clear prescription lenses — faint glass so eyes stay visible
+  const lensMat = mat(0xe8f4ff, { roughness: 0.08, metalness: 0.05, transparent: true, opacity: 0.1 });
 
   // hips / jeans waist
   const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.12, 4, 10), jeanMat), castShadow);
@@ -81,16 +83,12 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   coat.position.y = 1.32;
   root.add(coat);
 
-  // navy hood collar
+  // navy hood collar (body — does not turn with head)
   const collar = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.28), navyMat), castShadow);
   collar.position.y = 1.56;
   root.add(collar);
-  const hood = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.14, 10, 8, 0, Math.PI * 2, 0, Math.PI * 0.55), navyMat), castShadow);
-  hood.position.set(0, 1.62, -0.08);
-  hood.rotation.x = 0.4;
-  root.add(hood);
 
-  // orange-red zipper down the chest (signature from photo)
+  // orange-red zipper
   const zipper = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.48, 0.34), zipMat), castShadow);
   zipper.position.set(-0.08, 1.32, 0.01);
   root.add(zipper);
@@ -98,12 +96,11 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   zipPull.position.set(-0.08, 1.48, 0.18);
   root.add(zipPull);
 
-  // jacket hem / hand pockets hint
   const hem = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.52, 0.08, 0.34), jacketMat), castShadow);
   hem.position.y = 1.04;
   root.add(hem);
 
-  // legs — jeans
+  // legs
   const leftLeg = new THREE.Group();
   leftLeg.position.set(-0.11, 0.9, 0);
   const rightLeg = new THREE.Group();
@@ -122,7 +119,7 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
     root.add(leg);
   }
 
-  // arms — jacket sleeves
+  // arms
   const leftArm = new THREE.Group();
   leftArm.position.set(-0.3, 1.48, 0);
   const rightArm = new THREE.Group();
@@ -147,7 +144,7 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
     root.add(arm);
   }
 
-  // hiking backpack (olive, readable from behind — no neon)
+  // backpack
   const pack = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.42, 0.18), packMat), castShadow);
   pack.position.set(0, 1.35, -0.22);
   root.add(pack);
@@ -161,15 +158,19 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
     root.add(strap);
   }
 
-  // neck + head
+  // —— Head / neck group (looks with camera) ——
+  const headRoot = new THREE.Group();
+  headRoot.position.y = 1.56;
+  root.add(headRoot);
+
   const neck = shadowed(new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.1, 10), skinMat), castShadow);
-  neck.position.y = 1.58;
-  root.add(neck);
+  neck.position.y = 0.02;
+  headRoot.add(neck);
 
   const head = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 16), skinMat), castShadow);
-  head.position.y = 1.78;
+  head.position.y = 0.22;
   head.scale.set(0.95, 1.02, 0.92);
-  root.add(head);
+  headRoot.add(head);
 
   const faceTex = loadFaceTexture(skin.face);
   const face = new THREE.Mesh(
@@ -181,43 +182,41 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
       depthWrite: false,
     })
   );
-  face.position.set(0, 1.78, 0.155);
-  root.add(face);
+  face.position.set(0, 0.22, 0.155);
+  headRoot.add(face);
 
-  // short dark hair (no braid)
   const hair = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.175, 14, 12), hairMat), castShadow);
-  hair.position.set(0, 1.88, -0.01);
+  hair.position.set(0, 0.32, -0.01);
   hair.scale.set(1.05, 0.68, 1.1);
-  root.add(hair);
+  headRoot.add(hair);
   const fringe = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.06, 0.1), hairMat), castShadow);
-  fringe.position.set(0, 1.92, 0.1);
-  root.add(fringe);
+  fringe.position.set(0, 0.36, 0.1);
+  headRoot.add(fringe);
 
-  // 3D glasses frame (matches photo)
-  const bridge = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.02), glassMat), castShadow);
-  bridge.position.set(0, 1.8, 0.175);
-  root.add(bridge);
+  // Glasses frame + clear lenses (eyes visible)
+  const bridge = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.018, 0.018), glassMat), castShadow);
+  bridge.position.set(0, 0.24, 0.175);
+  headRoot.add(bridge);
   for (const side of [-1, 1]) {
-    const rim = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.07, 0.025), glassMat), castShadow);
-    rim.position.set(side * 0.08, 1.8, 0.175);
-    root.add(rim);
-    const lens = new THREE.Mesh(new THREE.PlaneGeometry(0.085, 0.055), lensMat);
-    lens.position.set(side * 0.08, 1.8, 0.19);
-    root.add(lens);
-    const temple = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.015, 0.015), glassMat), castShadow);
-    temple.position.set(side * 0.16, 1.8, 0.1);
+    const rim = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.07, 0.02), glassMat), castShadow);
+    rim.position.set(side * 0.08, 0.24, 0.175);
+    headRoot.add(rim);
+    const lens = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.05), lensMat);
+    lens.position.set(side * 0.08, 0.24, 0.188);
+    headRoot.add(lens);
+    const temple = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.014, 0.014), glassMat), castShadow);
+    temple.position.set(side * 0.16, 0.24, 0.1);
     temple.rotation.y = side * 0.5;
-    root.add(temple);
+    headRoot.add(temple);
   }
 
-  // ears
   for (const side of [-1, 1]) {
     const ear = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.035, 8, 8), skinMat), castShadow);
-    ear.position.set(side * 0.165, 1.78, 0);
-    root.add(ear);
+    ear.position.set(side * 0.165, 0.22, 0);
+    headRoot.add(ear);
   }
 
-  // Warm fill so protagonist stays clear in the forest
+  // Soft fill on head/body
   const key = new THREE.PointLight(0xfff0dd, 0.7, 5.5, 2);
   key.position.set(0.35, 1.75, 0.95);
   root.add(key);
@@ -226,9 +225,27 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   root.add(rimLight);
 
   root.userData.skinId = skin.id;
-  root.userData.joints = { leftLeg, rightLeg, leftArm, rightArm };
+  root.userData.joints = { leftLeg, rightLeg, leftArm, rightArm, headRoot };
   root.userData.walkPhase = 0;
+  root.userData.headYaw = 0;
+  root.userData.headPitch = 0;
   return root;
+}
+
+/** Sync neck/head with look — yaw relative to body, pitch up/down. */
+export function setAvatarLook(avatar, headYaw, headPitch, dt = 1 / 60) {
+  const headRoot = avatar?.userData?.joints?.headRoot;
+  if (!headRoot) return;
+  const yawLimit = 0.85;
+  const pitchLimit = 0.65;
+  const targetYaw = Math.max(-yawLimit, Math.min(yawLimit, headYaw));
+  const targetPitch = Math.max(-pitchLimit, Math.min(pitchLimit, headPitch));
+  const k = Math.min(1, dt * 14);
+  avatar.userData.headYaw += (targetYaw - (avatar.userData.headYaw || 0)) * k;
+  avatar.userData.headPitch += (targetPitch - (avatar.userData.headPitch || 0)) * k;
+  headRoot.rotation.order = "YXZ";
+  headRoot.rotation.y = avatar.userData.headYaw;
+  headRoot.rotation.x = avatar.userData.headPitch;
 }
 
 export function animateAvatar(avatar, dt, moving, sprint = false) {
