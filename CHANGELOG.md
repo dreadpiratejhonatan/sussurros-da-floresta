@@ -1,5 +1,11 @@
 # Changelog
 
+## b015 — 2026-08-08
+
+- HUD compacta em coluna flex (sem sobreposição)
+- No celular: objetivo longo oculto; chips pequenos; gameplay em primeiro plano
+- Cache `b015`
+
 ## b014 — 2026-08-08
 
 - Splash limpa: «Os primeiros povos» + jornada na mata (sem Cananéia / spoilers)
