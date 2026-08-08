@@ -1,5 +1,11 @@
 # Changelog
 
+## b017 — 2026-08-08
+
+- Cabeça/pescoço alinhados com a câmera (não mais invertidos cima/baixo nem esquerda/direita)
+- 1ª pessoa usa o mesmo sentido de pitch que a 3ª pessoa
+- Cache `b017`
+
 ## b016 — 2026-08-08
 
 - Crônicas em painel único sequencial (fala → fato), com tempo de leitura maior e sem sobreposição de toast/balão

@@ -140,10 +140,10 @@ export class Player {
     this.avatar.position.set(this.pos.x, this.pos.y - CONFIG.eyeHeight, this.pos.z);
     this.avatar.rotation.y = this._bodyYaw;
 
-    // Head/neck look with camera (relative to body)
+    // Head/neck matches camera look (bone +X/+Y are opposite to camera pitch/yaw signs)
     const lookFacing = this.yaw + Math.PI;
     const headYaw = shortestAngleDelta(this._bodyYaw, lookFacing);
-    setAvatarLook(this.avatar, headYaw, this.pitch, dt);
+    setAvatarLook(this.avatar, -headYaw, -this.pitch, dt);
 
     animateAvatar(this.avatar, dt, this._moving, this._sprint);
     this._applyCamera();
@@ -154,7 +154,8 @@ export class Player {
       this.camera.position.copy(this.pos);
       this.camera.rotation.order = "YXZ";
       this.camera.rotation.y = this.yaw;
-      this.camera.rotation.x = this.pitch;
+      // pitch>0 = look up (same as third-person aim); Three.js +X rotation looks down
+      this.camera.rotation.x = -this.pitch;
       return;
     }
 
