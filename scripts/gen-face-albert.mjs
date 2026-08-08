@@ -1,4 +1,4 @@
-/** Gera faces/albert.png 256×256 — traços humanos / indígenas, sem óculos tech. */
+/** Gera faces/albert.png 256×256 — guia da mata, pintura de argila e olhos âmbar. */
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -41,26 +41,29 @@ const fill = (x0, y0, x1, y1, r, g, b, a = 255) => {
 };
 
 fill(0, 0, W, H, 0, 0, 0, 0);
-// skin
-fill(52, 44, 204, 228, 118, 72, 48);
-// hair fringe
-fill(52, 44, 204, 86, 28, 16, 10);
+// copper-brown skin (darker than b005 — clear prod test)
+fill(52, 44, 204, 228, 96, 54, 34);
+// black hair fringe
+fill(52, 44, 204, 90, 18, 10, 6);
 // brows
-fill(74, 104, 116, 116, 36, 22, 14);
-fill(140, 104, 182, 116, 36, 22, 14);
-// eyes — warm dark, no cyan lenses
-fill(82, 120, 108, 140, 28, 18, 12);
-fill(148, 120, 174, 140, 28, 18, 12);
-fill(90, 128, 102, 136, 90, 160, 110); // soft green iris hint
-fill(156, 128, 168, 136, 90, 160, 110);
+fill(74, 100, 118, 114, 28, 16, 10);
+fill(138, 100, 182, 114, 28, 16, 10);
+// eyes — warm amber iris (was green)
+fill(82, 120, 110, 142, 22, 12, 8);
+fill(146, 120, 174, 142, 22, 12, 8);
+fill(90, 128, 104, 138, 210, 150, 55);
+fill(154, 128, 168, 138, 210, 150, 55);
 // nose
-fill(118, 142, 138, 172, 95, 55, 36);
+fill(116, 144, 140, 174, 78, 42, 26);
 // mouth
-fill(104, 188, 152, 198, 80, 45, 32);
-// ochre face paint marks (ancestral, not tech)
-fill(60, 148, 78, 168, 184, 106, 42, 200);
-fill(178, 148, 196, 168, 184, 106, 42, 200);
-fill(118, 96, 138, 108, 184, 106, 42, 160);
+fill(104, 190, 152, 200, 70, 36, 28);
+// white clay forehead stripe (ancestral mark — very visible)
+fill(108, 88, 148, 108, 232, 220, 190, 230);
+// red ochre cheek bars (prod-visible paint)
+fill(54, 150, 82, 178, 176, 58, 32, 220);
+fill(174, 150, 202, 178, 176, 58, 32, 220);
+// small spirit dot under left eye
+fill(88, 148, 100, 160, 120, 200, 140, 200);
 
 const raw = Buffer.alloc((W * 4 + 1) * H);
 for (let y = 0; y < H; y++) {

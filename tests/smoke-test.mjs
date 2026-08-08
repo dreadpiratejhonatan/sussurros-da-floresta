@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b005"), "dist HTML missing cache bust b005");
-assert(hostHtml.includes("?v=b005"), "host HTML missing cache bust b005");
+assert(distHtml.includes("?v=b006"), "dist HTML missing cache bust b006");
+assert(hostHtml.includes("?v=b006"), "host HTML missing cache bust b006");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -43,6 +43,8 @@ assert(fs.existsSync("release/hostgator-spirit/api/leaderboard.php"), "api missi
 
 const cfg = fs.readFileSync("src/js/config.js", "utf8");
 assert(cfg.includes("albert"), "Albert skin in CONFIG");
+assert(cfg.includes("#2a3d28"), "Albert moss suit color");
+assert(cfg.includes("#e6b84a"), "Albert amber accent");
 assert(cfg.includes("puzzles"), "puzzles in CONFIG");
 assert(cfg.includes("Os primeiros povos"), "pitch in CONFIG");
 assert(cfg.includes("cervo-luz"), "spirit animals in CONFIG");
