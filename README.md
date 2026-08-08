@@ -4,7 +4,7 @@
 
 | Onde | URL |
 | --- | --- |
-| **Produção (HostGator)** | https://jhonatanribeiro.com/sussurros-da-floresta/ |
+| **Produção (HostGator)** | https://jhonatanribeiro.com/spirit/ |
 | **GitHub Pages** | https://dreadpiratejhonatan.github.io/sussurros-da-floresta/ |
 | **Repo** | https://github.com/dreadpiratejhonatan/sussurros-da-floresta |
 
@@ -46,7 +46,7 @@ npm run test:smoke
 ```
 
 - `dist/` — Pages / preview
-- `release/hostgator-sussurros-da-floresta/` — FTP (**não** leva `leaderboard.json` / tickets vivos)
+- `release/hostgator-spirit/` — FTP → `public_html/spirit/` (**não** leva `leaderboard.json` / tickets vivos)
 
 ## Deploy
 

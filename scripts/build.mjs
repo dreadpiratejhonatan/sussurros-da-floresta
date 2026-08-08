@@ -1,4 +1,5 @@
-// Gera dist/ (bundle único) + release/hostgator-sussurros-da-floresta/
+// Gera dist/ (bundle único) + release/hostgator-spirit/
+// Produção HostGator: jhonatanribeiro.com/spirit/
 // Nunca sobrescreve data/*.json vivos no pacote HostGator.
 import fs from "node:fs";
 import path from "node:path";
@@ -7,8 +8,8 @@ import { execSync } from "node:child_process";
 
 process.chdir(path.dirname(path.dirname(fileURLToPath(import.meta.url))));
 const DIST = "dist";
-const HOST = path.join("release", "hostgator-sussurros-da-floresta");
-const CACHE = "b002";
+const HOST = path.join("release", "hostgator-spirit");
+const CACHE = "b003";
 
 /** Arquivos de dados vivos no servidor — nunca clobber no pacote HostGator. */
 const PRESERVE_DATA = new Set([
@@ -166,7 +167,7 @@ fs.writeFileSync(
     "*** NAO APAGUE a pasta data/ no servidor ***",
     "*** NAO sobrescreva data/leaderboard.json nem data/tickets.json ***",
     "",
-    "1. No cPanel, abra public_html/sussurros-da-floresta",
+    "1. No cPanel, abra public_html/spirit",
     "2. BACKUP: baixe data/leaderboard.json se existir",
     "3. Apague SOMENTE: index.html, src/, api/, music/, faces/, assets/",
     "   (deixe data/ intacta)",

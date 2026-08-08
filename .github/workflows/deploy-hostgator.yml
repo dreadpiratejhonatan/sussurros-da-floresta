@@ -1,4 +1,4 @@
-# Sobe release/hostgator-sussurros-da-floresta/ → jhonatanribeiro.com/sussurros-da-floresta/
+# Sobe release/hostgator-spirit/ → jhonatanribeiro.com/spirit/
 # Nunca sobrescreve data vivos no servidor (exclude + pacote sem leaderboard/tickets).
 name: Deploy HostGator
 
@@ -41,7 +41,7 @@ jobs:
           server: ${{ secrets.HOSTGATOR_FTP_HOST }}
           username: ${{ secrets.HOSTGATOR_FTP_USER }}
           password: ${{ secrets.HOSTGATOR_FTP_PASSWORD }}
-          local-dir: ./release/hostgator-sussurros-da-floresta/
+          local-dir: ./release/hostgator-spirit/
           server-dir: ${{ secrets.HOSTGATOR_FTP_DIR }}
           dangerous-clean-slate: false
           exclude: |

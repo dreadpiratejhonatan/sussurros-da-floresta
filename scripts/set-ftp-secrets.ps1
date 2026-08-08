@@ -9,7 +9,7 @@ param(
 $ErrorActionPreference = "Stop"
 
 Write-Host "Configurando secrets FTP em $Repo" -ForegroundColor Yellow
-Write-Host "Use a conta FTP dedicada do Sussurros (jail em public_html/sussurros-da-floresta/)." -ForegroundColor DarkGray
+Write-Host "Use a conta FTP dedicada do SPIRIT (jail em public_html/spirit/)." -ForegroundColor DarkGray
 Write-Host ""
 
 $hostName = Read-Host "HOSTGATOR_FTP_HOST"

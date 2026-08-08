@@ -17,29 +17,29 @@ console.log("smoke: build…");
 execSync("npm run build", { stdio: "inherit" });
 
 const distHtml = fs.readFileSync("dist/index.html", "utf8");
-const hostHtml = fs.readFileSync("release/hostgator-sussurros-da-floresta/index.html", "utf8");
+const hostHtml = fs.readFileSync("release/hostgator-spirit/index.html", "utf8");
 const gameJs = "dist/game.js";
-const bundleJs = "release/hostgator-sussurros-da-floresta/src/js/bundle.js";
+const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b002"), "dist HTML missing cache bust b002");
-assert(hostHtml.includes("?v=b002"), "host HTML missing cache bust b002");
+assert(distHtml.includes("?v=b003"), "dist HTML missing cache bust b003");
+assert(hostHtml.includes("?v=b003"), "host HTML missing cache bust b003");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
-assert(fs.existsSync("release/hostgator-sussurros-da-floresta/faces/albert.png"), "host face missing");
+assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
 assert(
-  !fs.existsSync("release/hostgator-sussurros-da-floresta/data/leaderboard.json") ||
-    fs.readFileSync("release/hostgator-sussurros-da-floresta/data/leaderboard.example.json", "utf8"),
+  !fs.existsSync("release/hostgator-spirit/data/leaderboard.json") ||
+    fs.readFileSync("release/hostgator-spirit/data/leaderboard.example.json", "utf8"),
   "host data examples"
 );
 assert(
-  !fs.existsSync("release/hostgator-sussurros-da-floresta/data/leaderboard.json"),
+  !fs.existsSync("release/hostgator-spirit/data/leaderboard.json"),
   "HostGator package must NOT ship live leaderboard.json"
 );
-assert(fs.existsSync("release/hostgator-sussurros-da-floresta/data/leaderboard.example.json"), "example ranking");
-assert(fs.existsSync("release/hostgator-sussurros-da-floresta/.htaccess"), ".htaccess missing");
-assert(fs.existsSync("release/hostgator-sussurros-da-floresta/api/leaderboard.php"), "api missing");
+assert(fs.existsSync("release/hostgator-spirit/data/leaderboard.example.json"), "example ranking");
+assert(fs.existsSync("release/hostgator-spirit/.htaccess"), ".htaccess missing");
+assert(fs.existsSync("release/hostgator-spirit/api/leaderboard.php"), "api missing");
 
 const cfg = fs.readFileSync("src/js/config.js", "utf8");
 assert(cfg.includes("albert"), "Albert skin in CONFIG");

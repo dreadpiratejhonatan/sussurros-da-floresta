@@ -2,7 +2,7 @@
 
 3D forest mystery (Three.js). Pitch: **Os primeiros povos**. Solo. Sem inimigos no v0.
 
-Production: https://jhonatanribeiro.com/sussurros-da-floresta/
+Production: https://jhonatanribeiro.com/spirit/ (SPIRIT)
 
 ## Cloud / phone (same as snow)
 
@@ -16,7 +16,7 @@ Production: https://jhonatanribeiro.com/sussurros-da-floresta/
 - Content knobs: `src/js/config.js`
 - Boot: `splash.js` → Albert → difficulty → `main.js`
 - World/puzzles: `world.js` · avatar: `skins.js` · save: `save.js`
-- Build: `scripts/build.mjs` → `dist/` + `release/hostgator-sussurros-da-floresta/`
+- Build: `scripts/build.mjs` → `dist/` + `release/hostgator-spirit/`
 - Local: `npm run start:win` → http://127.0.0.1:5175/
 
 ## Conventions

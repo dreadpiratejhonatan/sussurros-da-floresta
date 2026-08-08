@@ -1,5 +1,10 @@
 # Changelog
 
+## b003 — 2026-08-08
+
+- Produção HostGator em **https://jhonatanribeiro.com/spirit/** (SPIRIT)
+- Pacote FTP: `release/hostgator-spirit/`
+
 ## b002 — 2026-08-08
 
 - Trilha sonora procedural (drone, pad, melodia esparsa, dia/noite)

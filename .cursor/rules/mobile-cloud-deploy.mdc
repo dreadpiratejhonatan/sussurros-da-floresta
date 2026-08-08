@@ -10,4 +10,5 @@ alwaysApply: true
 - Bump `CACHE` / `SDF_BUILD` / `?v=` (`b002`…) on visible ships.
 - Never commit secrets or the private game recipe.
 - HostGator package must not overwrite live `data/*.json`.
+- Production HostGator path: `/spirit/` (https://jhonatanribeiro.com/spirit/).
 - See `AGENTS.md` and `docs/MOBILE-AUTO-PROD.md`.

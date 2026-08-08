@@ -1,7 +1,8 @@
 /** All tunable content lives here — prefer knobs over new frameworks. */
 export const CONFIG = {
   name: "Sussurros da Floresta",
-  slug: "sussurros-da-floresta",
+  slug: "spirit",
+  prodPath: "/spirit/",
   pitch: "Os primeiros povos",
   tone: "mystery",
   language: "pt-BR",
