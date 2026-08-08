@@ -3,11 +3,11 @@ export const CONFIG = {
   name: "Sussurros da Floresta",
   slug: "spirit",
   prodPath: "/spirit/",
-  pitch: "Os primeiros povos",
+  pitch: "Cananéia e os primeiros povos",
   tone: "mystery",
   language: "pt-BR",
   playerCount: "solo",
-  winCondition: "Descobrir todos os mistérios da floresta",
+  winCondition: "Revelar os mistérios e ouvir as crônicas da exploração",
   build:
     typeof window !== "undefined" && window.SDF_BUILD
       ? window.SDF_BUILD
@@ -38,11 +38,105 @@ export const CONFIG = {
       shirt: "#1a2740",
       skin: "#c49a76",
       accent: "#e85a2a",
-      personality: "Explorador da mata; segue os sussurros dos primeiros povos.",
-      blurb: "Óculos de grau (lentes claras), barba, jaqueta azul com zíper laranja e mochila — o protagonista da floresta.",
+      personality: "Explorador da mata; busca as crônicas de Cananéia e dos primeiros povos.",
+      blurb: "Único jogável: óculos de grau, jaqueta azul, zíper laranja e mochila — ouve NPCs históricos na trilha.",
     },
   },
   skinOrder: ["albert"],
+
+  /**
+   * NPCs históricos / míticos (não jogáveis).
+   * Fontes: pt.wikipedia.org/wiki/Cananeia e história da exploração do litoral sul.
+   */
+  npcs: [
+    {
+      id: "karai-carijo",
+      name: "Karaí Carijó",
+      kind: "horseman",
+      title: "Cavaleiro da Maratayama",
+      skin: 0x8a5a38,
+      shirt: 0x3a5a28,
+      pants: 0x2a2418,
+      hair: 0x140c08,
+      accent: 0xe07030,
+      fact:
+        "Antes de Cananéia, este litoral era Maratayama — «mar» e «terra» em tupi-guarani. Os Carijó/Guarani conheciam a costa e o caminho do Peabiru muito antes das caravelas.",
+      line: "Albert… a trilha que pisas já tinha nome quando o mapa ainda era névoa.",
+    },
+    {
+      id: "bacharel",
+      name: "Cosme Fernandes",
+      kind: "explorer",
+      title: "Bacharel de Cananéia",
+      skin: 0xc4a080,
+      shirt: 0x3a3a58,
+      pants: 0x2a2a30,
+      hair: 0x3a2818,
+      accent: 0xc8a060,
+      hat: "cap",
+      fact:
+        "Por volta de 1502, o degredado Cosme Fernandes — o Bacharel de Cananéia — ficou nestas terras. Tornou-se figura poderosa no povoado, décadas antes da vila oficial de São Vicente (1532).",
+      line: "Eu não servi à Coroa. A Coroa chegou tarde demais à minha ilha.",
+    },
+    {
+      id: "vespucci",
+      name: "Américo Vespúcio",
+      kind: "explorer",
+      title: "Navegador da costa",
+      skin: 0xd0b090,
+      shirt: 0x2a4a6a,
+      pants: 0x1a2430,
+      hair: 0x4a3020,
+      accent: 0xd4b070,
+      hat: "cap",
+      fact:
+        "Em janeiro de 1502, a expedição com Gaspar de Lemos e Américo Vespúcio passou por aqui e chamou o lugar de Barra do Rio Cananor. Mapas antigos já apontavam Cananéia entre 1498 e 1502.",
+      line: "Medimos a costa… mas a mata já tinha medido a gente.",
+    },
+    {
+      id: "martim-afonso",
+      name: "Martim Afonso",
+      kind: "explorer",
+      title: "Capitão da armada",
+      skin: 0xc8a888,
+      shirt: 0x5a2030,
+      pants: 0x2a2028,
+      hair: 0x2a1c14,
+      accent: 0xc0a050,
+      hat: "cap",
+      fact:
+        "Em 12 de agosto de 1531, Martim Afonso de Sousa aportou na região (Ilha do Bom Abrigo / Marataiama). São Vicente seria fundada em 22/01/1532 — Cananéia disputa o posto de primeiro povoado do Brasil.",
+      line: "Fundamos vilas no papel. A floresta fundou a memória primeiro.",
+    },
+    {
+      id: "anha-maratayama",
+      name: "Anhangaí",
+      kind: "elder",
+      title: "Anciã da costa",
+      skin: 0x7a4a2e,
+      shirt: 0x6b3a1e,
+      pants: 0x3a2818,
+      hair: 0x1a1008,
+      accent: 0xe8dcc0,
+      fact:
+        "Povos Tupi e Guarani ocupavam o litoral paulista séculos antes da colonização. Cananéia liga-se também ao estuário, à Ilha do Cardoso e às redes que ligavam o mar ao interior pelo Peabiru.",
+      line: "Os primeiros povos não sumiram, Albert. Mudaram de voz — e ainda falam.",
+    },
+    {
+      id: "peabiru",
+      name: "Espírito do Peabiru",
+      kind: "spirit",
+      title: "Caminho antigo",
+      skin: 0xa8d0c0,
+      shirt: 0x6a9080,
+      pants: 0x405848,
+      hair: 0xd4ffe8,
+      accent: 0xa8e6c0,
+      fact:
+        "O Peabiru era uma rede de caminhos indígenas que ligava o litoral ao interior — inclusive às terras dos Carijó/Guarani. Por ele passaram trocas, fugas e as primeiras entradas rumo ao sertão.",
+      line: "Segue a trilha que não está no mapa. Ela é mais velha que a tinta.",
+    },
+  ],
 
   world: {
     size: 56,
@@ -225,4 +319,8 @@ export function puzzleCount() {
 
 export function loreCount() {
   return CONFIG.lore.length;
+}
+
+export function npcCount() {
+  return CONFIG.npcs.length;
 }

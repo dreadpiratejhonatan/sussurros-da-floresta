@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { CONFIG, loreCount, puzzleCount } from "./config.js";
+import { CONFIG, loreCount, npcCount, puzzleCount } from "./config.js";
 import { Input } from "./input.js";
 import { HUD } from "./hud.js";
 import { World } from "./world.js";
@@ -11,6 +11,7 @@ import { runBootFlow } from "./splash.js";
 import { getSkin } from "./skins.js";
 import { SpiritAnimals } from "./animals.js";
 import { Climate } from "./climate.js";
+import { HistoricalNpcs } from "./npcs.js";
 
 class Game {
   constructor() {
@@ -46,6 +47,7 @@ class Game {
     this.audio = new AudioBed();
     this.world = new World(this.scene);
     this.animals = new SpiritAnimals(this.scene);
+    this.npcs = new HistoricalNpcs(this.scene);
     this.player = new Player(this.camera, this.world, "albert");
     this.climate = new Climate(this.scene, this.camera);
     this.touch = mobile ? new TouchControls(this.input) : null;
@@ -102,6 +104,7 @@ class Game {
   start() {
     this.player.reset();
     this.climate.reset();
+    this.npcs.reset(this.save.data.npcs);
     this._runTime = 0;
     this.input.enabled = true;
     this.hud.show();
@@ -120,6 +123,10 @@ class Game {
       loreCount(),
       this.save.animalCount(CONFIG.animals.map((a) => a.id)),
       CONFIG.animals.length
+    );
+    this.hud.setChronicles(
+      this.save.npcCount(CONFIG.npcs.map((n) => n.id)),
+      npcCount()
     );
   }
 
@@ -157,12 +164,13 @@ class Game {
     const elapsed = Math.round(this._runTime);
     const loreN = this.save.loreCount(CONFIG.lore.map((l) => l.saveId));
     const aniN = this.save.animalCount(CONFIG.animals.map((a) => a.id));
+    const npcN = this.save.npcCount(CONFIG.npcs.map((n) => n.id));
     const body = document.getElementById("win-body");
     if (body) {
       body.textContent =
         `Albert revelou ${puzzleCount()} mistérios em ${elapsed}s. ` +
-        `Lore ${loreN}/${loreCount()} · Espíritos ${aniN}/${CONFIG.animals.length}. ` +
-        `Os primeiros povos permanecem na frequência da mata.`;
+        `Crônicas ${npcN}/${npcCount()} · Lore ${loreN}/${loreCount()} · Espíritos ${aniN}/${CONFIG.animals.length}. ` +
+        `Cananéia e os primeiros povos permanecem na memória da mata.`;
     }
     if (this.save.data.bestTimeSec == null || elapsed < this.save.data.bestTimeSec) {
       this.save.data.bestTimeSec = elapsed;
@@ -222,6 +230,29 @@ class Game {
       return;
     }
 
+    const npc = this.npcs.nearest(x, z, CONFIG.interactDist + 0.8);
+    if (npc) {
+      const first = !this.save.heardNpc(npc.cfg.id);
+      this.hud.setPrompt(
+        first
+          ? `E — falar com ${npc.cfg.name}`
+          : `${npc.cfg.name} · crônica ouvida`
+      );
+      if (this.input.consumeInteract()) {
+        if (first) {
+          this.save.markNpc(npc.cfg.id);
+          npc.heard = true;
+          this._refreshBars();
+        }
+        this.audio.loreChime();
+        this.hud.showBalloon(npc.cfg.name, npc.cfg.line, 4200);
+        setTimeout(() => {
+          this.hud.showToast(`${npc.cfg.title}: ${npc.cfg.fact}`, 7000);
+        }, 900);
+      }
+      return;
+    }
+
     const animal = this.animals.nearest(x, z, CONFIG.interactDist + 0.6);
     if (animal) {
       const first = !this.save.sawAnimal(animal.cfg.id);
@@ -271,6 +302,7 @@ class Game {
     );
     this.audio.update(dt);
     this.animals.update(this._runTime, dt);
+    this.npcs.update(this._runTime, dt);
 
     // Day / night cycle (readable daylight bias) + seasons / weather
     const dayPhase =
