@@ -1,5 +1,13 @@
 # Changelog
 
+## b016 — 2026-08-08
+
+- Crônicas em painel único sequencial (fala → fato), com tempo de leitura maior e sem sobreposição de toast/balão
+- Ciclo dia/noite completo (não fica preso no dia); estações e clima mais rápidos
+- Chuva e vento mais visíveis (partículas + balanço das árvores); sessão começa sob chuva legível
+- Câmera: olhar para o chão (pitch ampliado); ainda sem enterrar a câmera no terreno
+- Cache `b016`
+
 ## b015 — 2026-08-08
 
 - HUD compacta em coluna flex (sem sobreposição)

@@ -10,6 +10,7 @@ export class World {
     this.loreMeshes = new Map();
     this.fireflies = [];
     this.footprints = [];
+    this.trees = [];
     this.fogMult = 1;
     this.dayMult = 1;
     this._sun = null;
@@ -146,6 +147,11 @@ export class World {
       group.add(mid);
     }
     this.scene.add(group);
+    this.trees.push({
+      group,
+      phase: rand() * Math.PI * 2,
+      amp: 0.02 + rand() * 0.03,
+    });
     this.colliders.push({ x, z, r: 0.42 * scale });
   }
 
@@ -435,6 +441,16 @@ export class World {
     }
     for (const fp of this.footprints) {
       fp.material.opacity = 0.12 + (1 - dayPhase) * 0.18;
+    }
+
+    // Wind sway — trees lean when the weather is blowing
+    const wind = c.wind || 0;
+    if (this.trees.length && wind > 0.12) {
+      for (const tree of this.trees) {
+        const lean = Math.sin(t * (1.6 + wind) + tree.phase) * tree.amp * (0.35 + wind);
+        tree.group.rotation.z = lean;
+        tree.group.rotation.x = lean * 0.35;
+      }
     }
   }
 }

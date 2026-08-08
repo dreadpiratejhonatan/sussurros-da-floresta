@@ -82,8 +82,8 @@ export class Climate {
     this.weather = WEATHER.clear;
     this.seasonT = 0;
     this.weatherT = 0;
-    this.seasonLen = CONFIG.world.seasonLengthSec ?? 75;
-    this.weatherLen = 18 + Math.random() * 16;
+    this.seasonLen = CONFIG.world.seasonLengthSec ?? 36;
+    this.weatherLen = 12 + Math.random() * 10;
     this.dayPhase = 0.7;
     this.isDay = true;
     this._rain = 0;
@@ -94,12 +94,17 @@ export class Climate {
     this._prevWeather = null;
     this._toast = null;
     this._buildParticles();
+    // Start with readable weather so rain/wind are not "sound only"
+    this.weather = WEATHER.rain;
+    this._rain = 0.85;
+    this._wind = 0.4;
+    this._fog = 0.55;
   }
 
   _buildParticles() {
-    this.rain = this._makePoints(900, 0xa8c8e8, 0.045, 0.55);
-    this.sand = this._makePoints(700, 0xd2b48c, 0.055, 0.7);
-    this.wind = this._makePoints(220, 0xdde8e0, 0.04, 0.35);
+    this.rain = this._makePoints(1400, 0xc8e4ff, 0.16, 0.85);
+    this.sand = this._makePoints(900, 0xd2b48c, 0.12, 0.8);
+    this.wind = this._makePoints(480, 0xeef6f0, 0.11, 0.55);
     this.scene.add(this.rain.points);
     this.scene.add(this.sand.points);
     this.scene.add(this.wind.points);
@@ -134,10 +139,14 @@ export class Climate {
   reset() {
     this.seasonIndex = 0;
     this.season = SEASONS.primavera;
-    this.weather = WEATHER.clear;
+    this.weather = WEATHER.rain;
     this.seasonT = 0;
     this.weatherT = 0;
-    this.weatherLen = 16 + Math.random() * 14;
+    this.weatherLen = 12 + Math.random() * 10;
+    this._rain = 0.85;
+    this._wind = 0.4;
+    this._fog = 0.55;
+    this._sand = 0;
     this._prevSeason = null;
     this._prevWeather = null;
     this._toast = null;
@@ -186,7 +195,7 @@ export class Climate {
 
   _rollWeather(force) {
     this.weatherT = 0;
-    this.weatherLen = 16 + Math.random() * 22;
+    this.weatherLen = 10 + Math.random() * 14;
     let id = pickWeighted(this.season.weatherWeights);
     // Avoid instant repeat unless forced season change
     if (!force && id === this.weather.id && Math.random() < 0.55) {
@@ -201,33 +210,45 @@ export class Climate {
     const oz = followPos?.z ?? 0;
 
     this._stepSystem(this.rain, dt, ox, oy, oz, this._rain, {
-      vx: this._wind * 3,
-      vy: -14 - this._rain * 8,
-      vz: this._wind * 1.5,
-      resetY: 12,
+      vx: this._wind * 4,
+      vy: -18 - this._rain * 12,
+      vz: this._wind * 2,
+      resetY: 14,
+      span: 32,
     });
     this._stepSystem(this.sand, dt, ox, oy, oz, this._sand, {
-      vx: 8 + this._wind * 10,
+      vx: 10 + this._wind * 12,
       vy: -1.2,
-      vz: (Math.sin(performance.now() * 0.001) * 2),
-      resetY: 8,
+      vz: Math.sin(performance.now() * 0.001) * 3,
+      resetY: 9,
       horizontal: true,
+      span: 30,
     });
-    this._stepSystem(this.wind, dt, ox, oy, oz, this._wind * 0.65, {
-      vx: 10 + this._wind * 8,
-      vy: 0.2,
-      vz: 2,
-      resetY: 6,
+    // Wind streaks — visible when windy even without rain
+    const windVis = Math.max(this._wind - 0.2, 0) * 1.35;
+    this._stepSystem(this.wind, dt, ox, oy, oz, windVis, {
+      vx: 14 + this._wind * 12,
+      vy: 0.35,
+      vz: 3 + this._wind * 2,
+      resetY: 7,
       horizontal: true,
+      span: 34,
     });
   }
 
   _stepSystem(sys, dt, ox, oy, oz, intensity, opts) {
     const { positions, velocities, count, points, baseOpacity } = sys;
-    points.material.opacity = baseOpacity * Math.min(1, intensity * 1.15);
-    points.visible = intensity > 0.04;
+    if (!points.material.userData.baseSize) {
+      points.material.userData.baseSize = points.material.size;
+    }
+    points.material.opacity = baseOpacity * Math.min(1, intensity * 1.35);
+    points.material.size =
+      points.material.userData.baseSize * (1 + Math.min(0.45, intensity * 0.3));
+    points.visible = intensity > 0.05;
     if (!points.visible) return;
     points.position.set(ox, 0, oz);
+    const span = opts.span || 28;
+    const half = span * 0.5;
 
     for (let i = 0; i < count; i++) {
       const ix = i * 3;
@@ -237,12 +258,14 @@ export class Climate {
 
       const out =
         positions[ix + 1] < 0 ||
-        Math.abs(positions[ix]) > 16 ||
-        Math.abs(positions[ix + 2]) > 16;
+        Math.abs(positions[ix]) > half ||
+        Math.abs(positions[ix + 2]) > half;
       if (out) {
-        positions[ix] = (Math.random() - 0.5) * 28;
-        positions[ix + 1] = opts.horizontal ? Math.random() * opts.resetY : opts.resetY * (0.4 + Math.random());
-        positions[ix + 2] = (Math.random() - 0.5) * 28;
+        positions[ix] = (Math.random() - 0.5) * span;
+        positions[ix + 1] = opts.horizontal
+          ? Math.random() * opts.resetY
+          : opts.resetY * (0.35 + Math.random());
+        positions[ix + 2] = (Math.random() - 0.5) * span;
       }
     }
     points.geometry.attributes.position.needsUpdate = true;

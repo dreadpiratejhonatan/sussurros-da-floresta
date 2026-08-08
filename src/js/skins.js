@@ -237,7 +237,7 @@ export function setAvatarLook(avatar, headYaw, headPitch, dt = 1 / 60) {
   const headRoot = avatar?.userData?.joints?.headRoot;
   if (!headRoot) return;
   const yawLimit = 0.85;
-  const pitchLimit = 0.65;
+  const pitchLimit = 1.15;
   const targetYaw = Math.max(-yawLimit, Math.min(yawLimit, headYaw));
   const targetPitch = Math.max(-pitchLimit, Math.min(pitchLimit, headPitch));
   const k = Math.min(1, dt * 14);
