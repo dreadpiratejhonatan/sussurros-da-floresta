@@ -259,6 +259,13 @@ class Game {
     if (this.input.consumeCameraToggle()) this.player.toggleCamera();
 
     this.player.update(dt, this.input);
+    this.audio.setListener(this.player.pos.x, this.player.pos.z);
+    this.audio.updateFootsteps(
+      dt,
+      this.player._moving,
+      this.player._sprint,
+      this.player.onGround
+    );
     this.audio.update(dt);
     this.animals.update(this._runTime, dt);
 
@@ -282,11 +289,11 @@ class Game {
       const skin = getSkin(this.save.data.skinId);
       const lines = [
         "A mata guarda nomes anteriores ao mapa.",
-        "Cada gota de chuva é um arquivo antigo.",
-        "Meu relógio atrasa perto dos totens…",
-        "Os primeiros povos não sumiram. Mudaram de frequência.",
+        "Cada gota de chuva lembra um nome antigo.",
+        "Os primeiros povos não sumiram — mudaram de voz.",
         "Esses animais… não são só animais.",
         "Há uma melodia debaixo do vento.",
+        "O rio fala mais alto quando a noite chega.",
       ];
       this.hud.showBalloon(skin.name, lines[Math.floor(Math.random() * lines.length)]);
       this._whisperTimer = this._nextWhisperGap();

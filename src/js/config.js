@@ -39,7 +39,7 @@ export const CONFIG = {
       skin: "#60361f",
       accent: "#e6b84a",
       personality: "Guia calmo da mata; ouve os primeiros povos na névoa.",
-      blurb: "Pele cobre, pintura de argila, manto verde-musgo, trança e amuleto âmbar.",
+      blurb: "Pele cobre, pintura de argila, manto verde-musgo, trança e amuleto da mata.",
     },
   },
   skinOrder: ["albert"],
@@ -191,7 +191,7 @@ export const CONFIG = {
   enemies: [],
 
   audio: {
-    master: 0.32,
+    master: 0.42,
     rain: true,
     wind: true,
     river: true,

@@ -43,7 +43,7 @@ function shadowed(mesh, on) {
 
 /**
  * Albert — guia da mata / primeiros povos.
- * Pele cobre, manto verde-musgo, pintura de argila, coroa de penas, amuleto âmbar.
+ * Pele cobre, manto verde-musgo, pintura de argila, trança, amuleto — sem glow tech.
  */
 export function buildAvatar(skinId, { castShadow = true } = {}) {
   const skin = getSkin(skinId);
@@ -63,12 +63,12 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   const woodMat = mat(0x5a3a1e, { roughness: 0.8 });
   const clayMat = mat(0xe8dcc0, { roughness: 0.75 });
   const spiritMat = mat(spirit, {
-    roughness: 0.4,
+    roughness: 0.55,
     emissive: spirit,
-    emissiveIntensity: 0.42,
+    emissiveIntensity: 0.12,
   });
   const ochreMat = mat(0xb03a1e, { roughness: 0.7 });
-  const featherMat = mat(0xc45a28, { roughness: 0.65 });
+  const featherMat = mat(0xa84e22, { roughness: 0.7 });
 
   // hips + wrapped skirt / tunic hem
   const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.17, 0.14, 4, 10), clothMat), castShadow);
@@ -153,23 +153,17 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
     bead.rotation.x = Math.PI / 2;
     bead.position.y = -0.48;
     arm.add(bead);
-    // shoulder feather tuft
-    const feather = shadowed(new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.16, 5), wrapMat), castShadow);
-    feather.position.set(side * 0.04, 0.08, -0.04);
-    feather.rotation.z = side * 0.5;
-    feather.rotation.x = 0.4;
-    arm.add(feather);
     root.add(arm);
   }
 
-  // satchel (natural, not tech pack)
-  const satchel = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.26, 0.12), leatherMat), castShadow);
-  satchel.position.set(0.22, 1.15, 0.05);
-  satchel.rotation.z = -0.15;
+  // small hip pouch (side, not a glowing backpack)
+  const satchel = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.08), leatherMat), castShadow);
+  satchel.position.set(0.2, 1.05, 0.02);
+  satchel.rotation.z = -0.2;
   root.add(satchel);
-  const strap = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.55, 0.02), leatherMat), castShadow);
-  strap.position.set(0.08, 1.35, 0.02);
-  strap.rotation.z = 0.55;
+  const strap = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.38, 0.015), leatherMat), castShadow);
+  strap.position.set(0.1, 1.28, 0.02);
+  strap.rotation.z = 0.45;
   root.add(strap);
 
   // neck + head
@@ -209,25 +203,19 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   braidTip.position.set(-0.14, 1.22, -0.22);
   root.add(braidTip);
 
-  // woven headband + feather crown (clear silhouette upgrade)
-  const band = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.022, 5, 18), wrapMat), castShadow);
+  // woven headband + one soft feather (not a spike crown)
+  const band = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 5, 18), wrapMat), castShadow);
   band.rotation.x = Math.PI / 2;
   band.position.set(0, 1.9, 0);
   root.add(band);
-  const bandBead = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.028, 8, 8), spiritMat), castShadow);
+  const bandBead = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.022, 8, 8), clayMat), castShadow);
   bandBead.position.set(0, 1.9, 0.15);
   root.add(bandBead);
-  for (const [sx, rot] of [
-    [-0.08, -0.35],
-    [0, 0],
-    [0.08, 0.35],
-  ]) {
-    const plume = shadowed(new THREE.Mesh(new THREE.ConeGeometry(0.028, 0.22, 5), featherMat), castShadow);
-    plume.position.set(sx, 2.08, -0.02);
-    plume.rotation.z = rot;
-    plume.rotation.x = -0.15;
-    root.add(plume);
-  }
+  const plume = shadowed(new THREE.Mesh(new THREE.ConeGeometry(0.022, 0.16, 5), featherMat), castShadow);
+  plume.position.set(0.08, 1.98, -0.06);
+  plume.rotation.z = 0.55;
+  plume.rotation.x = 0.35;
+  root.add(plume);
 
   // ears
   for (const side of [-1, 1]) {
@@ -236,19 +224,14 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
     root.add(ear);
   }
 
-  // wooden amulet with amber spirit glow
+  // wooden amulet — soft, no neon point light
   const cord = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.008, 4, 14), woodMat), castShadow);
   cord.position.set(0, 1.52, 0.12);
   cord.rotation.x = 0.5;
   root.add(cord);
-  const amulet = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 10), spiritMat), castShadow);
-  amulet.position.set(0, 1.42, 0.18);
+  const amulet = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.04, 10, 10), spiritMat), castShadow);
+  amulet.position.set(0, 1.42, 0.16);
   root.add(amulet);
-
-  // warm amber spirit light — reads in dusk forest
-  const glow = new THREE.PointLight(spirit, 0.35, 2.6);
-  glow.position.set(0, 1.4, 0.25);
-  root.add(glow);
 
   root.userData.skinId = skin.id;
   root.userData.joints = { leftLeg, rightLeg, leftArm, rightArm };

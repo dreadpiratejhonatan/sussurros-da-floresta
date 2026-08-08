@@ -28,7 +28,7 @@ Fluxo: splash (libera trilha) → Albert → dificuldade → explorar **5 misté
 
 ## Personagem
 
-**Albert** — pele cobre, traços indígenas, manto verde-musgo, pintura de argila, trança, coroa de penas e amuleto âmbar.
+**Albert** — pele cobre, traços indígenas, manto verde-musgo, pintura de argila, trança e amuleto da mata.
 
 ### Adicionar personagem (quando quiser mais skins)
 

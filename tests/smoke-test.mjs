@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b006"), "dist HTML missing cache bust b006");
-assert(hostHtml.includes("?v=b006"), "host HTML missing cache bust b006");
+assert(distHtml.includes("?v=b007"), "dist HTML missing cache bust b007");
+assert(hostHtml.includes("?v=b007"), "host HTML missing cache bust b007");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -51,5 +51,15 @@ assert(cfg.includes("cervo-luz"), "spirit animals in CONFIG");
 assert(cfg.includes("lore"), "lore in CONFIG");
 assert(fs.existsSync("src/js/animals.js"), "animals module");
 assert(fs.existsSync("src/js/audio.js"), "audio module");
+
+const audioSrc = fs.readFileSync("src/js/audio.js", "utf8");
+assert(audioSrc.includes("footstep"), "footsteps in audio");
+assert(audioSrc.includes("wolfHowl"), "wolf howl in audio");
+assert(audioSrc.includes("birdCall"), "bird calls in audio");
+assert(audioSrc.includes("_river"), "river bed in audio");
+
+const playerSrc = fs.readFileSync("src/js/player.js", "utf8");
+assert(playerSrc.includes("_bodyYaw"), "body facing separate from camera yaw");
+assert(playerSrc.includes("shortestAngleDelta"), "smooth body turn");
 
 console.log("SMOKE OK");
