@@ -39,10 +39,10 @@ export function runBootFlow({ onUnlockAudio } = {}) {
         const card = document.createElement("button");
         card.type = "button";
         card.className = "pick-card";
+        const label = String(s.name || "").toUpperCase();
         card.innerHTML = `
-          <img src="${s.face}" alt="${s.name}" width="96" height="96" />
-          <strong>${s.name}</strong>
-          <span>${s.blurb}</span>
+          <img src="${s.face}" alt="${label}" width="96" height="96" />
+          <strong>${label}</strong>
         `;
         card.addEventListener("click", () => {
           skinId = s.id;

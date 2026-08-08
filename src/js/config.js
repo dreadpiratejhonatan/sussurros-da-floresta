@@ -3,11 +3,11 @@ export const CONFIG = {
   name: "Sussurros da Floresta",
   slug: "spirit",
   prodPath: "/spirit/",
-  pitch: "Fronteira · primeiros povos · novas terras",
-  tone: "epic-frontier",
+  pitch: "Os primeiros povos",
+  tone: "mystery",
   language: "pt-BR",
   playerCount: "solo",
-  winCondition: "Explorar a mata, ouvir as crônicas e revelar os mistérios",
+  winCondition: "Descobrir todos os mistérios da floresta",
   build:
     typeof window !== "undefined" && window.SDF_BUILD
       ? window.SDF_BUILD
@@ -32,14 +32,14 @@ export const CONFIG = {
   skins: {
     albert: {
       id: "albert",
-      name: "Albert",
+      name: "ALBERT",
       face: "faces/albert.png",
       suit: "#2f6db4",
       shirt: "#1a2740",
       skin: "#c49a76",
       accent: "#e85a2a",
-      personality: "Explorador da fronteira; segue caçadores, crônicas e o sussurro das novas terras.",
-      blurb: "Único jogável: óculos de grau, jaqueta azul, zíper laranja e mochila — o forasteiro que ouve a mata.",
+      personality: "Explorador da mata; ouve os primeiros povos na névoa.",
+      blurb: "",
     },
   },
   skinOrder: ["albert"],
