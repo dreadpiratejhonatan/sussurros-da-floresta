@@ -1,0 +1,284 @@
+:root {
+  --moss: #3d7a4a;
+  --moss-deep: #1f3d2a;
+  --mist: #c5ddd0;
+  --ink: #0a1410;
+  --glow: #a8e6c0;
+  --panel: rgba(8, 18, 12, 0.88);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--mist);
+  font-family: "Source Sans 3", system-ui, sans-serif;
+  user-select: none;
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+#app, #game-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud__brand {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 22px;
+  letter-spacing: 0.14em;
+  color: var(--glow);
+  text-shadow: 0 2px 12px rgba(80, 160, 110, 0.45);
+}
+
+.hud__objective {
+  position: absolute;
+  top: 52px;
+  left: 22px;
+  max-width: min(420px, 70vw);
+  padding: 8px 12px;
+  background: var(--panel);
+  border-left: 3px solid var(--glow);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--mist);
+  line-height: 1.35;
+}
+
+.hud__pause {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  border: 1px solid rgba(168, 230, 192, 0.4);
+  background: var(--panel);
+  color: var(--glow);
+  font-size: 18px;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.hud__hint {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: rgba(197, 221, 208, 0.7);
+  background: rgba(8, 18, 12, 0.55);
+  padding: 6px 12px;
+  border-radius: 999px;
+}
+
+.crosshair {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  margin: -3px 0 0 -3px;
+  border-radius: 50%;
+  background: rgba(168, 230, 192, 0.85);
+  box-shadow: 0 0 8px rgba(168, 230, 192, 0.6);
+}
+
+.prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  transform: translateX(-50%);
+  padding: 10px 16px;
+  background: var(--panel);
+  border: 1px solid rgba(168, 230, 192, 0.45);
+  border-radius: 10px;
+  font-weight: 600;
+  color: var(--glow);
+}
+
+.toast {
+  position: absolute;
+  left: 50%;
+  top: 22%;
+  transform: translateX(-50%);
+  max-width: min(90vw, 420px);
+  padding: 14px 18px;
+  background: rgba(8, 18, 12, 0.9);
+  border: 1px solid rgba(168, 230, 192, 0.5);
+  border-radius: 12px;
+  text-align: center;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 22px;
+  line-height: 1.35;
+  color: var(--mist);
+}
+
+.menu, .pause {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(ellipse at 50% 20%, rgba(61, 122, 74, 0.35), transparent 55%),
+    linear-gradient(180deg, #0a1410 0%, #122018 45%, #0a1410 100%);
+}
+
+.menu__bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 80%, rgba(168, 230, 192, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 30%, rgba(47, 90, 62, 0.25), transparent 40%);
+  pointer-events: none;
+}
+
+.menu__card, .pause__card {
+  position: relative;
+  width: min(92vw, 440px);
+  padding: 36px 28px 28px;
+  text-align: center;
+  background: rgba(8, 18, 12, 0.72);
+  border: 1px solid rgba(168, 230, 192, 0.28);
+  border-radius: 18px;
+  backdrop-filter: blur(8px);
+}
+
+.menu__kicker {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(168, 230, 192, 0.8);
+  margin-bottom: 10px;
+}
+
+.menu__title, .pause__title {
+  font-family: "Cormorant Garamond", serif;
+  font-weight: 700;
+  font-size: clamp(40px, 8vw, 56px);
+  line-height: 0.95;
+  letter-spacing: 0.04em;
+  color: #e8f6ee;
+  margin-bottom: 14px;
+}
+
+.menu__title-sub {
+  display: inline-block;
+  font-size: 0.55em;
+  letter-spacing: 0.18em;
+  color: var(--glow);
+}
+
+.menu__sub, .pause__sub {
+  font-size: 15px;
+  line-height: 1.45;
+  color: rgba(197, 221, 208, 0.85);
+  margin-bottom: 22px;
+}
+
+.menu__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 220px;
+  padding: 14px 22px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #4f9a63, #2f6a42);
+  color: #f2fff6;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(30, 80, 50, 0.45);
+}
+
+.menu__btn:hover { filter: brightness(1.08); }
+
+.pause__link {
+  display: block;
+  margin: 12px auto 0;
+  background: none;
+  border: none;
+  color: rgba(197, 221, 208, 0.85);
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.touch {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.touch__look {
+  position: absolute;
+  inset: 0 0 0 35%;
+  pointer-events: auto;
+}
+
+.touch__stick {
+  position: absolute;
+  left: 28px;
+  bottom: 28px;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 230, 192, 0.35);
+  background: rgba(8, 18, 12, 0.35);
+  pointer-events: auto;
+}
+
+.touch__knob {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-radius: 50%;
+  background: rgba(168, 230, 192, 0.55);
+}
+
+.touch__btn {
+  position: absolute;
+  right: 28px;
+  bottom: 40px;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 2px solid rgba(168, 230, 192, 0.45);
+  background: rgba(8, 18, 12, 0.55);
+  color: var(--glow);
+  font-weight: 700;
+  font-size: 20px;
+  pointer-events: auto;
+}
+
+@media (max-width: 720px) {
+  .hud__brand { font-size: 16px; left: 14px; top: 14px; }
+  .hud__objective { left: 14px; top: 42px; font-size: 12px; }
+  .hud__hint { display: none; }
+}

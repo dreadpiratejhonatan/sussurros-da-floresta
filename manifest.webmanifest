@@ -1,0 +1,20 @@
+{
+  "name": "Sussurros da Floresta",
+  "short_name": "Sussurros",
+  "description": "Explore a mata, ouça os sussurros e descubra o que a floresta esconde.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a1410",
+  "theme_color": "#1f3d2a",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%231f3d2a'/%3E%3Ctext y='.9em' font-size='70' x='10'%3E%F0%9F%8C%B2%3C/text%3E%3C/svg%3E",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+export const CONFIG = {
+  build: typeof window !== "undefined" ? window.SDF_BUILD || "dev" : "dev",
+  eyeHeight: 1.65,
+  moveSpeed: 3.2,
+  sprintMult: 1.5,
+  mouseSens: 0.002,
+  interactDist: 2.6,
+  gravity: 16,
+  jumpSpeed: 5,
+  playerRadius: 0.3,
+  colors: {
+    moss: 0x2d5a3d,
+    mossDeep: 0x1a3a28,
+    bark: 0x4a3220,
+    leaf: 0x3d7a4a,
+    mist: 0x8aa898,
+    nightSky: 0x0a1410,
+    path: 0x3a3428,
+    glow: 0xa8e6c0,
+  },
+};
