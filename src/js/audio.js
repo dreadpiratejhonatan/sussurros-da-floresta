@@ -23,6 +23,11 @@ export class AudioBed {
     this._listenerZ = 10;
     this._stepCooldown = 0;
     this._lastStepSide = 0;
+    this._seasonId = "primavera";
+    this.rainGain = null;
+    this.windGain = null;
+    this.sandGain = null;
+    this._softGain = null;
   }
 
   async unlock() {
@@ -53,6 +58,7 @@ export class AudioBed {
     if (CONFIG.audio.rain || CONFIG.audio.wind) this._softAmbience();
     if (CONFIG.audio.river) this._river();
     if (CONFIG.audio.music) this._startScore();
+    this._weatherBeds();
 
     // Immediate life in the forest so the bed never feels empty
     this._scheduleFirstCalls();
@@ -85,6 +91,107 @@ export class AudioBed {
     this.ambBus.gain.setTargetAtTime(0.22 + night * 0.08, this.ctx.currentTime, 1.2);
   }
 
+  /**
+   * Drive rain / wind / sand beds from climate intensities (0..1).
+   * Day/night also shifts animal call pacing.
+   */
+  setClimate({ rain = 0, wind = 0, sand = 0, dayPhase = 0.5, seasonId = "primavera" } = {}) {
+    if (!this.started || !this.ctx) return;
+    this._dayMix = dayPhase;
+    this._seasonId = seasonId;
+    const t = this.ctx.currentTime;
+    if (this.rainGain) {
+      this.rainGain.gain.setTargetAtTime(Math.max(0.0001, rain * 0.14), t, 0.6);
+    }
+    if (this.windGain) {
+      this.windGain.gain.setTargetAtTime(Math.max(0.0001, wind * 0.1 + sand * 0.04), t, 0.5);
+    }
+    if (this.sandGain) {
+      this.sandGain.gain.setTargetAtTime(Math.max(0.0001, sand * 0.12), t, 0.45);
+    }
+    // Soft bed quieter under heavy weather so rain/sand read
+    if (this._softGain) {
+      const soft = 0.045 * (1 - Math.max(rain, sand) * 0.55);
+      this._softGain.gain.setTargetAtTime(Math.max(0.01, soft), t, 0.8);
+    }
+  }
+
+  /** Dedicated rain / wind / sand noise beds (always running, gain-driven). */
+  _weatherBeds() {
+    // Rain — bright filtered noise
+    this.rainGain = this.ctx.createGain();
+    this.rainGain.gain.value = 0.0001;
+    this.rainGain.connect(this.ambBus);
+    this._noiseBed({
+      gainNode: this.rainGain,
+      hp: 600,
+      lp: 4200,
+      q: 0.6,
+      brown: 0.01,
+    });
+
+    // Wind — low whoosh
+    this.windGain = this.ctx.createGain();
+    this.windGain.gain.value = 0.0001;
+    this.windGain.connect(this.ambBus);
+    this._noiseBed({
+      gainNode: this.windGain,
+      hp: 80,
+      lp: 700,
+      q: 0.4,
+      brown: 0.04,
+    });
+
+    // Sandstorm — mid hiss / grit
+    this.sandGain = this.ctx.createGain();
+    this.sandGain.gain.value = 0.0001;
+    this.sandGain.connect(this.ambBus);
+    this._noiseBed({
+      gainNode: this.sandGain,
+      hp: 400,
+      lp: 2400,
+      q: 1.1,
+      brown: 0.02,
+      band: 1100,
+    });
+  }
+
+  _noiseBed({ gainNode, hp, lp, q, brown = 0.02, band = 0 }) {
+    const bufferSize = 2 * this.ctx.sampleRate;
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < bufferSize; i++) {
+      const white = Math.random() * 2 - 1;
+      last = (last + brown * white) / (1 + brown);
+      data[i] = last * 3.2 + white * 0.15;
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    src.loop = true;
+    let node = src;
+    if (band) {
+      const bp = this.ctx.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = band;
+      bp.Q.value = q;
+      node.connect(bp);
+      node = bp;
+    }
+    const hip = this.ctx.createBiquadFilter();
+    hip.type = "highpass";
+    hip.frequency.value = hp;
+    const lop = this.ctx.createBiquadFilter();
+    lop.type = "lowpass";
+    lop.frequency.value = lp;
+    lop.Q.value = q;
+    node.connect(hip);
+    hip.connect(lop);
+    lop.connect(gainNode);
+    src.start();
+    this._nodes.push(src);
+  }
+
   /** Brown-ish noise through stacked lowpass — rain/wind without hiss. */
   _softAmbience() {
     const bufferSize = 2 * this.ctx.sampleRate;
@@ -114,14 +221,14 @@ export class AudioBed {
     hp.type = "highpass";
     hp.frequency.value = 70;
 
-    const g = this.ctx.createGain();
-    g.gain.value = 0.055;
+    this._softGain = this.ctx.createGain();
+    this._softGain.gain.value = 0.055;
 
     src.connect(lp1);
     lp1.connect(lp2);
     lp2.connect(hp);
-    hp.connect(g);
-    g.connect(this.ambBus);
+    hp.connect(this._softGain);
+    this._softGain.connect(this.ambBus);
     src.start();
     this._nodes.push(src);
   }
@@ -489,13 +596,26 @@ export class AudioBed {
   _pickForestCall() {
     const night = this._dayMix < 0.42;
     const roll = Math.random();
+    // Heavy weather: fewer birds, more wind-era howls
+    if (this.rainGain && this.rainGain.gain.value > 0.06) {
+      if (roll < 0.5) return;
+      if (night) this.owlHoot();
+      else this.birdCall();
+      return;
+    }
+    if (this.sandGain && this.sandGain.gain.value > 0.05) {
+      if (night && roll < 0.4) this.wolfHowl();
+      return;
+    }
     if (night) {
       if (roll < 0.35) this.wolfHowl();
       else if (roll < 0.7) this.owlHoot();
       else this.birdCall();
     } else {
-      if (roll < 0.78) this.birdCall();
-      else if (roll < 0.9) this.owlHoot();
+      // Spring birds more often
+      const birdBias = this._seasonId === "primavera" ? 0.88 : 0.78;
+      if (roll < birdBias) this.birdCall();
+      else if (roll < 0.92) this.owlHoot();
       else this.wolfHowl();
     }
   }

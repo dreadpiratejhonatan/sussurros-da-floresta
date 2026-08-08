@@ -10,6 +10,7 @@ import { AudioBed } from "./audio.js";
 import { runBootFlow } from "./splash.js";
 import { getSkin } from "./skins.js";
 import { SpiritAnimals } from "./animals.js";
+import { Climate } from "./climate.js";
 
 class Game {
   constructor() {
@@ -46,6 +47,7 @@ class Game {
     this.world = new World(this.scene);
     this.animals = new SpiritAnimals(this.scene);
     this.player = new Player(this.camera, this.world, "albert");
+    this.climate = new Climate(this.scene, this.camera);
     this.touch = mobile ? new TouchControls(this.input) : null;
 
     this.state = "boot";
@@ -99,6 +101,7 @@ class Game {
 
   start() {
     this.player.reset();
+    this.climate.reset();
     this._runTime = 0;
     this.input.enabled = true;
     this.hud.show();
@@ -269,7 +272,7 @@ class Game {
     this.audio.update(dt);
     this.animals.update(this._runTime, dt);
 
-    // Bias toward daylight so the mata and Albert stay readable
+    // Day / night cycle (readable daylight bias) + seasons / weather
     const dayPhase =
       0.55 +
       0.45 *
@@ -280,8 +283,20 @@ class Game {
                 Math.PI *
                 2
             ));
-    this.world.update(this._runTime, dayPhase);
+    this.climate.update(dt, this._runTime, dayPhase, this.player.pos);
+    const climate = this.climate.state();
+    this.world.update(this._runTime, dayPhase, climate);
     this.audio.setDayMix(dayPhase);
+    this.audio.setClimate({
+      rain: climate.rain,
+      wind: climate.wind,
+      sand: climate.sand,
+      dayPhase,
+      seasonId: climate.seasonId,
+    });
+    this.hud.setClimate(climate.hudLine);
+    const climateToast = this.climate.consumeToast();
+    if (climateToast) this.hud.showToast(climateToast.text, climateToast.ms);
 
     this._handleInteract();
 
@@ -295,6 +310,14 @@ class Game {
         "Esses animais… não são só animais.",
         "Há uma melodia debaixo do vento.",
         "O rio fala mais alto quando a noite chega.",
+        climate.isDay
+          ? `A luz do ${climate.seasonLabel.toLowerCase()} muda o cheiro da trilha.`
+          : `Na noite de ${climate.seasonLabel.toLowerCase()}, a mata fala baixo.`,
+        climate.weatherId === "rain"
+          ? "A chuva lava nomes antigos nas folhas."
+          : climate.weatherId === "sandstorm"
+            ? "A areia risca o ar — um aviso seco da estação."
+            : "O clima da floresta nunca fica quieto por muito tempo.",
       ];
       this.hud.showBalloon(skin.name, lines[Math.floor(Math.random() * lines.length)]);
       this._whisperTimer = this._nextWhisperGap();

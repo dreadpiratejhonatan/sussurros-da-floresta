@@ -23,8 +23,8 @@ const bundleJs = "release/hostgator-spirit/src/js/bundle.js";
 
 assert(fs.existsSync(gameJs), "dist/game.js missing");
 assert(fs.existsSync(bundleJs), "host bundle missing");
-assert(distHtml.includes("?v=b010"), "dist HTML missing cache bust b010");
-assert(hostHtml.includes("?v=b010"), "host HTML missing cache bust b010");
+assert(distHtml.includes("?v=b011"), "dist HTML missing cache bust b011");
+assert(hostHtml.includes("?v=b011"), "host HTML missing cache bust b011");
 assert(distHtml.includes("SDF_BUILD"), "SDF_BUILD missing in dist");
 assert(fs.existsSync("faces/albert.png"), "faces/albert.png missing");
 assert(fs.existsSync("release/hostgator-spirit/faces/albert.png"), "host face missing");
@@ -52,6 +52,19 @@ assert(cfg.includes("cervo-luz"), "spirit animals in CONFIG");
 assert(cfg.includes("lore"), "lore in CONFIG");
 assert(fs.existsSync("src/js/animals.js"), "animals module");
 assert(fs.existsSync("src/js/audio.js"), "audio module");
+assert(fs.existsSync("src/js/climate.js"), "climate module");
+assert(cfg.includes("seasonLengthSec"), "season length in CONFIG");
+assert(cfg.includes("seasons: true"), "seasons enabled");
+
+const climateSrc = fs.readFileSync("src/js/climate.js", "utf8");
+assert(climateSrc.includes("sandstorm"), "sandstorm weather");
+assert(climateSrc.includes("primavera"), "spring season");
+assert(climateSrc.includes("rain"), "rain particles");
+
+const audioSrcFull = fs.readFileSync("src/js/audio.js", "utf8");
+assert(audioSrcFull.includes("setClimate"), "audio setClimate");
+assert(audioSrcFull.includes("_weatherBeds"), "weather audio beds");
+assert(audioSrcFull.includes("rainGain"), "rain audio gain");
 
 const audioSrc = fs.readFileSync("src/js/audio.js", "utf8");
 assert(audioSrc.includes("footstep"), "footsteps in audio");
