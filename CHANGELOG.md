@@ -1,5 +1,13 @@
 # Changelog
 
+## b008 — 2026-08-08
+
+- Cena bem mais clara: sol/hemi/fill + névoa mais leve + dia mais longo
+- Albert iluminado (key/rim) para não sumir na névoa
+- Câmera 3ª pessoa olha para cima/baixo de verdade (órbita com pitch)
+- Mira escondida em 3ª pessoa; HUD mais limpa no celular
+- Cache `b008`
+
 ## b007 — 2026-08-08
 
 - Albert deixa de caminhar de costas: corpo vira na direção do movimento

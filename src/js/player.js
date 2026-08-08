@@ -26,6 +26,7 @@ export class Player {
     this._bodyYaw = this.yaw + Math.PI;
     this.avatar.rotation.y = this._bodyYaw;
     world.scene.add(this.avatar);
+    this._syncCrosshair();
     this._fwd = new THREE.Vector3();
     this._right = new THREE.Vector3();
     this._camOffset = new THREE.Vector3();
@@ -52,6 +53,12 @@ export class Player {
     this.mode = this.mode === "first" ? "third" : "first";
     this.avatar.visible = true;
     this._setFirstPersonBodyVisible(this.mode === "third");
+    this._syncCrosshair();
+  }
+
+  _syncCrosshair() {
+    const el = document.getElementById("crosshair");
+    if (el) el.hidden = this.mode !== "first";
   }
 
   /** Hide head/face in 1st person so it doesn't clip the camera; keep body optional off. */
@@ -82,6 +89,7 @@ export class Player {
     this.avatar.rotation.y = this._bodyYaw;
     this.avatar.visible = true;
     this._setFirstPersonBodyVisible(true);
+    this._syncCrosshair();
     this._applyCamera();
   }
 
@@ -89,7 +97,8 @@ export class Player {
     const look = input.consumeLook();
     this.yaw -= look.dx * CONFIG.mouseSens;
     this.pitch -= look.dy * CONFIG.mouseSens;
-    this.pitch = Math.max(-1.15, Math.min(0.55, this.pitch));
+    // Allow looking up and down freely (mobile drag + mouse)
+    this.pitch = Math.max(-1.05, Math.min(0.85, this.pitch));
 
     this._fwd.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
     this._right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -147,20 +156,22 @@ export class Player {
       return;
     }
 
+    // Third person orbit: pitch looks up/down at the world (not locked to Albert's back)
     const dist = CONFIG.thirdPersonDist;
-    const height = 1.35 - this.pitch * 0.85;
-    this._camOffset.set(
-      Math.sin(this.yaw) * dist,
-      height,
-      Math.cos(this.yaw) * dist
-    );
+    const pivotY = this.pos.y - CONFIG.eyeHeight + 1.4;
+    const cosP = Math.cos(this.pitch);
+    const sinP = Math.sin(this.pitch);
     this.camera.position.set(
-      this.pos.x + this._camOffset.x,
-      this.pos.y - CONFIG.eyeHeight + 1.55 + this._camOffset.y * 0.35,
-      this.pos.z + this._camOffset.z
+      this.pos.x + Math.sin(this.yaw) * dist * Math.max(0.35, cosP),
+      pivotY - sinP * dist * 0.9 + 0.25,
+      this.pos.z + Math.cos(this.yaw) * dist * Math.max(0.35, cosP)
     );
-    // Pull camera up a bit and look at chest/head so Albert reads clearly in frame
-    this._lookTarget.set(this.pos.x, this.pos.y - 0.15, this.pos.z);
+    const aim = 7;
+    this._lookTarget.set(
+      this.pos.x - Math.sin(this.yaw) * aim * Math.max(0.25, cosP),
+      pivotY - sinP * aim,
+      this.pos.z - Math.cos(this.yaw) * aim * Math.max(0.25, cosP)
+    );
     this.camera.lookAt(this._lookTarget);
   }
 }

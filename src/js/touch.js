@@ -99,8 +99,8 @@ export class TouchControls {
         if (active == null) return;
         const t = [...e.changedTouches].find((c) => c.identifier === active);
         if (!t) return;
-        this.input.lookDX += (t.clientX - lastX) * 2.1;
-        this.input.lookDY += (t.clientY - lastY) * 2.1;
+        this.input.lookDX += (t.clientX - lastX) * 2.35;
+        this.input.lookDY += (t.clientY - lastY) * 2.6;
         lastX = t.clientX;
         lastY = t.clientY;
       },

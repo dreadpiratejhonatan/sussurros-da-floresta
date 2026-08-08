@@ -269,9 +269,10 @@ class Game {
     this.audio.update(dt);
     this.animals.update(this._runTime, dt);
 
+    // Bias toward daylight so the mata and Albert stay readable
     const dayPhase =
-      0.35 +
-      0.65 *
+      0.55 +
+      0.45 *
         (0.5 +
           0.5 *
             Math.sin(

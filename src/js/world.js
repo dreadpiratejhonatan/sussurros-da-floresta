@@ -20,24 +20,29 @@ export class World {
   setAtmosphere({ fogMult = 1, dayMult = 1 } = {}) {
     this.fogMult = fogMult;
     this.dayMult = dayMult;
-    if (this.scene.fog) this.scene.fog.density = 0.038 * fogMult;
-    if (this._sun) this._sun.intensity = 0.55 * dayMult;
-    if (this._hemi) this._hemi.intensity = 0.5 * dayMult;
+    if (this.scene.fog) this.scene.fog.density = 0.016 * fogMult;
+    if (this._sun) this._sun.intensity = 1.15 * dayMult;
+    if (this._hemi) this._hemi.intensity = 1.05 * dayMult;
+    if (this._fill) this._fill.intensity = 0.55 * dayMult;
   }
 
   _build() {
     const w = CONFIG.world;
     const { colors } = CONFIG;
-    this.scene.background = new THREE.Color(w.fog);
-    this.scene.fog = new THREE.FogExp2(w.fog, 0.038);
+    this.scene.background = new THREE.Color(w.skyDay);
+    this.scene.fog = new THREE.FogExp2(w.fog, 0.016);
 
-    this._hemi = new THREE.HemisphereLight(0xb8d4c4, 0x1a2a1c, 0.5);
+    this._hemi = new THREE.HemisphereLight(0xd8efe4, 0x3a5a44, 1.05);
     this.scene.add(this._hemi);
-    this._sun = new THREE.DirectionalLight(0xcfe8d8, 0.55);
+    this._sun = new THREE.DirectionalLight(0xfff6e8, 1.15);
     this._sun.position.set(14, 30, 10);
     this._sun.castShadow = true;
     this._sun.shadow.mapSize.set(1024, 1024);
     this.scene.add(this._sun);
+    // Soft fill so Albert and props stay readable in fog
+    this._fill = new THREE.DirectionalLight(0xc8e6d8, 0.55);
+    this._fill.position.set(-10, 18, -8);
+    this.scene.add(this._fill);
 
     const ground = new THREE.Mesh(
       new THREE.CircleGeometry(w.size, 72),
@@ -386,10 +391,13 @@ export class World {
     );
     this.scene.background.copy(sky);
     if (this.scene.fog) this.scene.fog.color.copy(sky);
-    // Night thickens fog slightly for mystery
+    // Keep fog light enough to read Albert; night only a touch denser
     if (this.scene.fog) {
-      this.scene.fog.density = 0.034 * this.fogMult + (1 - dayPhase) * 0.012;
+      this.scene.fog.density = 0.014 * this.fogMult + (1 - dayPhase) * 0.006;
     }
+    if (this._sun) this._sun.intensity = (0.75 + dayPhase * 0.55) * this.dayMult;
+    if (this._hemi) this._hemi.intensity = (0.8 + dayPhase * 0.4) * this.dayMult;
+    if (this._fill) this._fill.intensity = (0.4 + dayPhase * 0.25) * this.dayMult;
 
     for (const [, entry] of this.puzzleMeshes) {
       entry.mesh.rotation.y = t * 0.25;

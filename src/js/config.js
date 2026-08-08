@@ -16,7 +16,7 @@ export const CONFIG = {
   eyeHeight: 1.62,
   moveSpeed: 3.35,
   sprintMult: 1.55,
-  mouseSens: 0.0021,
+  mouseSens: 0.0024,
   interactDist: 2.85,
   gravity: 16,
   jumpSpeed: 5.1,
@@ -24,9 +24,9 @@ export const CONFIG = {
   thirdPersonDist: 4.1,
 
   difficulties: {
-    easy: { id: "easy", label: "Trilha leve", moveMult: 1.12, fogMult: 0.85, dayMult: 1.15 },
-    normal: { id: "normal", label: "Mata fechada", moveMult: 1, fogMult: 1, dayMult: 1 },
-    hard: { id: "hard", label: "Névoa densa", moveMult: 0.92, fogMult: 1.25, dayMult: 0.85 },
+    easy: { id: "easy", label: "Trilha leve", moveMult: 1.12, fogMult: 0.75, dayMult: 1.2 },
+    normal: { id: "normal", label: "Mata fechada", moveMult: 1, fogMult: 0.9, dayMult: 1.05 },
+    hard: { id: "hard", label: "Névoa densa", moveMult: 0.92, fogMult: 1.1, dayMult: 0.95 },
   },
 
   skins: {
@@ -47,10 +47,10 @@ export const CONFIG = {
   world: {
     size: 56,
     seed: 20260808,
-    ground: 0x1a3324,
-    fog: 0x0c1812,
-    skyDay: 0x6a8f7a,
-    skyNight: 0x06100c,
+    ground: 0x2d523a,
+    fog: 0x24382c,
+    skyDay: 0x9cbcab,
+    skyNight: 0x1a2e24,
     hub: { x: 0, z: -4, label: "Clareira dos Antigos", kind: "totem" },
     props: { trees: 110, rocks: 28, grass: 220, fireflies: 48 },
     dayLengthSec: 420,
