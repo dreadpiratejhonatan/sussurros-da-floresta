@@ -1,7 +1,8 @@
 import { CONFIG } from "./config.js";
 
 /**
- * Forest bed: wind/rain, river, birds, wolf howl, owl, footsteps.
+ * Forest + frontier epic bed (original score — not licensed film music).
+ * Mood: wilderness chase, explorers arriving, first peoples on the trail.
  * Procedural Web Audio — no sample files.
  */
 export class AudioBed {
@@ -15,8 +16,10 @@ export class AudioBed {
     this.started = false;
     this._nodes = [];
     this._callTimer = 4;
-    this._melodyTimer = 14;
-    this._motif = [196, 233, 262, 294, 330, 294, 262, 233];
+    this._melodyTimer = 5;
+    this._drumTimer = 0.5;
+    // Original frontier motif (A-minor / dorian color) — not The Gael
+    this._motif = [220, 261.63, 329.63, 293.66, 220, 196, 220, 261.63, 329.63, 349.23, 329.63, 293.66];
     this._motifStep = 0;
     this._dayMix = 0.5;
     this._listenerX = 0;
@@ -41,7 +44,7 @@ export class AudioBed {
     this.master.connect(this.ctx.destination);
 
     this.musicBus = this.ctx.createGain();
-    this.musicBus.gain.value = CONFIG.audio.music ? 0.22 : 0;
+    this.musicBus.gain.value = CONFIG.audio.music ? 0.32 : 0;
     this.musicBus.connect(this.master);
 
     this.sfxBus = this.ctx.createGain();
@@ -87,7 +90,7 @@ export class AudioBed {
     this._dayMix = dayPhase;
     if (!this.musicBus || !this.ambBus || !this.ctx) return;
     const night = 1 - dayPhase;
-    this.musicBus.gain.setTargetAtTime(0.16 + night * 0.1, this.ctx.currentTime, 1.2);
+    this.musicBus.gain.setTargetAtTime(0.26 + night * 0.1, this.ctx.currentTime, 1.2);
     this.ambBus.gain.setTargetAtTime(0.22 + night * 0.08, this.ctx.currentTime, 1.2);
   }
 
@@ -300,9 +303,14 @@ export class AudioBed {
   }
 
   _startScore() {
-    this._drone(98, 0.014, "sine");
-    this._drone(147, 0.008, "sine");
-    this._drone(196, 0.005, "sine", 0.04);
+    // Deep wilderness pad
+    this._drone(55, 0.02, "sine");
+    this._drone(82.41, 0.016, "triangle");
+    this._drone(110, 0.01, "sine", 0.05);
+    // Soft "string" layer — filtered saw, epic but not hissy
+    this._drone(164.81, 0.006, "sawtooth", 0.08);
+    // Opening phrase soon after unlock
+    setTimeout(() => this._playPhrase(true), 1200);
   }
 
   _drone(freq, gain, type = "sine", vibrato = 0) {
@@ -331,27 +339,85 @@ export class AudioBed {
     this._nodes.push(osc);
   }
 
+  /** Heartbeat / trail drum — frontier chase pulse. */
+  _trailDrum() {
+    if (!this.started || !CONFIG.audio.music) return;
+    const t0 = this.ctx.currentTime;
+    const bufferSize = Math.floor(this.ctx.sampleRate * 0.12);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      const env = Math.pow(1 - i / bufferSize, 2.2);
+      data[i] = (Math.random() * 2 - 1) * env * 0.9;
+    }
+    const src = this.ctx.createBufferSource();
+    src.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.value = 140;
+    const g = this.ctx.createGain();
+    const night = 1 - this._dayMix;
+    g.gain.value = 0.045 + night * 0.02;
+    src.connect(filter);
+    filter.connect(g);
+    g.connect(this.musicBus);
+    src.start(t0);
+    src.stop(t0 + 0.14);
+  }
+
+  /** Play a short soaring phrase (original). */
+  _playPhrase(full = false) {
+    if (!this.started || !CONFIG.audio.music) return;
+    const len = full ? this._motif.length : 4 + Math.floor(Math.random() * 5);
+    const t0 = this.ctx.currentTime;
+    for (let i = 0; i < len; i++) {
+      const freq = this._motif[(this._motifStep + i) % this._motif.length];
+      const start = t0 + i * 0.38;
+      const osc = this.ctx.createOscillator();
+      osc.type = i % 3 === 0 ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(freq, start);
+      // slight rise like a chase theme
+      osc.frequency.linearRampToValueAtTime(freq * 1.02, start + 0.3);
+      const g = this.ctx.createGain();
+      g.gain.setValueAtTime(0.0001, start);
+      g.gain.exponentialRampToValueAtTime(0.028, start + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + 0.55);
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 1400;
+      osc.connect(filter);
+      filter.connect(g);
+      g.connect(this.musicBus);
+      osc.start(start);
+      osc.stop(start + 0.6);
+    }
+    this._motifStep += len;
+  }
+
   _melodyNote() {
     if (!this.started || !CONFIG.audio.music) return;
+    if (Math.random() < 0.35) {
+      this._playPhrase(false);
+      return;
+    }
     const freq = this._motif[this._motifStep % this._motif.length];
     this._motifStep++;
-    if (Math.random() < 0.45) return;
     const t0 = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
-    osc.type = "sine";
+    osc.type = "triangle";
     osc.frequency.setValueAtTime(freq, t0);
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0.0001, t0);
-    g.gain.exponentialRampToValueAtTime(0.016, t0 + 0.12);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 2.2);
+    g.gain.exponentialRampToValueAtTime(0.024, t0 + 0.1);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 1.8);
     const filter = this.ctx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.value = 900;
+    filter.frequency.value = 1200;
     osc.connect(filter);
     filter.connect(g);
     g.connect(this.musicBus);
     osc.start(t0);
-    osc.stop(t0 + 2.4);
+    osc.stop(t0 + 2.0);
   }
 
   /** Leaf/dirt footstep — short filtered noise thump. */
@@ -638,7 +704,14 @@ export class AudioBed {
       this._melodyTimer -= dt;
       if (this._melodyTimer <= 0) {
         this._melodyNote();
-        this._melodyTimer = 10 + Math.random() * 18;
+        this._melodyTimer = 4.5 + Math.random() * 7;
+      }
+      this._drumTimer -= dt;
+      if (this._drumTimer <= 0) {
+        this._trailDrum();
+        // Faster pulse at night / in wind — chase feeling
+        const pace = 0.48 - (1 - this._dayMix) * 0.08 - Math.min(0.12, (this.windGain?.gain.value || 0) * 0.8);
+        this._drumTimer = Math.max(0.32, pace);
       }
     }
   }

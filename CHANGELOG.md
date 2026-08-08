@@ -1,5 +1,12 @@
 # Changelog
 
+## b013 — 2026-08-08
+
+- Tom de fronteira / exploração (mood Last of the Mohicans — trilha **original**, sem OST licenciada)
+- Score: pads épicos, frase ascendente, batida de trilha
+- NPC caçador Yacuã + Karaí como caçador a cavalo; splash/pitch atualizados
+- Cache `b013`
+
 ## b012 — 2026-08-08
 
 - Enredo ampliado: Cananéia e a exploração da América do Sul

@@ -1,6 +1,6 @@
 # Sussurros da Floresta
 
-**Os primeiros povos.** Aventura solo de mistério na mata fechada (Three.js).
+**Fronteira · primeiros povos · novas terras.** Aventura solo na mata (Three.js) — exploração, caça e crônicas de Cananéia.
 
 | Onde | URL |
 | --- | --- |
