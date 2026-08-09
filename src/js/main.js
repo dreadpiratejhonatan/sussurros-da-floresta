@@ -50,6 +50,7 @@ class Game {
     this.npcs = new HistoricalNpcs(this.scene);
     this.player = new Player(this.camera, this.world, "albert");
     this.climate = new Climate(this.scene, this.camera);
+    this.climate.bindFoliage(this.world);
     this.touch = mobile ? new TouchControls(this.input) : null;
 
     this.state = "boot";

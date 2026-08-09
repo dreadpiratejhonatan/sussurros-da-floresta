@@ -11,6 +11,7 @@ export class World {
     this.fireflies = [];
     this.footprints = [];
     this.trees = [];
+    this.grass = [];
     this.fogMult = 1;
     this.dayMult = 1;
     this._sun = null;
@@ -112,6 +113,12 @@ export class World {
       blade.position.set(Math.cos(ang) * dist, 0.2, Math.sin(ang) * dist);
       blade.rotation.y = rand() * Math.PI;
       this.scene.add(blade);
+      this.grass.push({
+        mesh: blade,
+        phase: rand() * Math.PI * 2,
+        amp: 0.18 + rand() * 0.28,
+        baseY: blade.rotation.y,
+      });
     }
   }
 
@@ -135,24 +142,52 @@ export class World {
     trunk.position.y = trunkH / 2;
     trunk.castShadow = true;
     group.add(trunk);
+
+    // Canopy group sways/flutters independently of the trunk
+    const canopyRoot = new THREE.Group();
+    canopyRoot.position.y = trunkH;
+    group.add(canopyRoot);
+
     const leafMat = new THREE.MeshStandardMaterial({ color: CONFIG.colors.leaf, roughness: 0.88 });
     this._leafMats.push(leafMat);
-    const canopy = new THREE.Mesh(new THREE.ConeGeometry(1.35 * scale, 3.1 * scale, 7), leafMat);
-    canopy.position.y = trunkH + 1.05 * scale;
+    const canopyR = 1.35 * scale;
+    const canopy = new THREE.Mesh(new THREE.ConeGeometry(canopyR, 3.1 * scale, 7), leafMat);
+    canopy.position.y = 1.05 * scale;
     canopy.castShadow = true;
-    group.add(canopy);
+    canopyRoot.add(canopy);
     if (rand() > 0.4) {
       const mid = new THREE.Mesh(new THREE.ConeGeometry(1.05 * scale, 2.3 * scale, 7), leafMat);
-      mid.position.y = trunkH + 0.15 * scale;
-      group.add(mid);
+      mid.position.y = 0.15 * scale;
+      canopyRoot.add(mid);
     }
     this.scene.add(group);
     this.trees.push({
       group,
+      canopyRoot,
       phase: rand() * Math.PI * 2,
-      amp: 0.02 + rand() * 0.03,
+      flutter: rand() * Math.PI * 2,
+      amp: 0.025 + rand() * 0.04,
+      x,
+      z,
+      scale,
+      trunkH,
+      canopyR,
+      canopyTop: trunkH + 2.55 * scale,
+      canopyBot: trunkH + 0.15 * scale,
+      leafMats: [leafMat],
     });
     this.colliders.push({ x, z, r: 0.42 * scale });
+  }
+
+  /** Canopy volumes for rain collision (world space). */
+  getCanopies() {
+    return this.trees.map((t) => ({
+      x: t.x,
+      z: t.z,
+      r: t.canopyR * 0.92,
+      top: t.canopyTop,
+      bot: t.canopyBot,
+    }));
   }
 
   _addRock(x, z, scale) {
@@ -421,7 +456,10 @@ export class World {
     if (this._fill) this._fill.intensity = (0.4 + dayPhase * 0.25) * this.dayMult * dim;
 
     if (this._groundMat) this._groundMat.color.setHex(c.ground);
-    for (const m of this._leafMats) m.color.setHex(c.leaf);
+    // Wet leaves darken a bit in rain
+    const wet = Math.min(1, (c.rain || 0) * 0.55);
+    const leafCol = new THREE.Color(c.leaf).multiplyScalar(1 - wet * 0.22);
+    for (const m of this._leafMats) m.color.copy(leafCol);
 
     for (const [, entry] of this.puzzleMeshes) {
       entry.mesh.rotation.y = t * 0.25;
@@ -443,14 +481,50 @@ export class World {
       fp.material.opacity = 0.12 + (1 - dayPhase) * 0.18;
     }
 
-    // Wind sway — trees lean when the weather is blowing
+    this._animateFoliage(t, c);
+  }
+
+  _animateFoliage(t, c) {
     const wind = c.wind || 0;
-    if (this.trees.length && wind > 0.12) {
-      for (const tree of this.trees) {
-        const lean = Math.sin(t * (1.6 + wind) + tree.phase) * tree.amp * (0.35 + wind);
-        tree.group.rotation.z = lean;
-        tree.group.rotation.x = lean * 0.35;
+    const rain = c.rain || 0;
+    // Always a light breeze; wind weather amplifies it
+    const breeze = 0.18 + wind * 1.15;
+    const gust = 1.4 + wind * 2.2;
+
+    for (const tree of this.trees) {
+      const lean =
+        Math.sin(t * gust + tree.phase) * tree.amp * breeze +
+        Math.sin(t * (0.7 + wind) + tree.phase * 1.7) * tree.amp * 0.45 * breeze;
+      tree.group.rotation.z = lean;
+      tree.group.rotation.x = lean * 0.4 + Math.sin(t * 0.9 + tree.flutter) * tree.amp * 0.25 * breeze;
+
+      // Leaves flutter faster than the trunk lean
+      const flutter =
+        Math.sin(t * (3.2 + wind * 4) + tree.flutter) * (0.02 + wind * 0.08) +
+        Math.sin(t * (5.5 + wind * 3) + tree.phase) * (0.01 + wind * 0.05);
+      // Raindrops pecking the canopy
+      const dripShake =
+        rain > 0.08
+          ? Math.sin(t * (18 + rain * 12) + tree.phase) * 0.012 * rain +
+            Math.sin(t * 27 + tree.flutter) * 0.008 * rain
+          : 0;
+      if (tree.canopyRoot) {
+        tree.canopyRoot.rotation.z = flutter + dripShake;
+        tree.canopyRoot.rotation.x = flutter * 0.55 + dripShake * 0.4;
+        tree.canopyRoot.position.y =
+          tree.trunkH + (rain > 0.08 ? Math.sin(t * 22 + tree.phase) * 0.02 * rain : 0);
       }
+    }
+
+    // Grass bends with the wind (and a little from rain weight)
+    const gWind = 0.25 + wind * 1.4;
+    for (const g of this.grass) {
+      const bend =
+        Math.sin(t * (2.8 + wind * 3.5) + g.phase) * g.amp * gWind +
+        Math.sin(t * (4.6 + wind * 2) + g.phase * 1.3) * g.amp * 0.35 * gWind;
+      const rainBend = rain * 0.06 * Math.sin(t * 9 + g.phase);
+      g.mesh.rotation.z = bend + rainBend;
+      g.mesh.rotation.x = bend * 0.45 + rainBend * 0.3;
     }
   }
 }

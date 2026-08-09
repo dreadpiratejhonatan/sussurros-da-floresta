@@ -1,5 +1,11 @@
 # Changelog
 
+## b020 — 2026-08-09
+
+- Árvores e grama balançam com o vento (copa independente do tronco)
+- Chuva interage com as folhas: respingo/pingo escorrendo da copa + tremer da folhagem
+- Cache `b020`
+
 ## b019 — 2026-08-09
 
 - Rosto do Albert: cabelo curto (sem “boné”), óculos de lente clara, sem bigode pesado

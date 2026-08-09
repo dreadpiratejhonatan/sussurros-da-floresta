@@ -93,8 +93,16 @@ export class Climate {
     this._prevSeason = null;
     this._prevWeather = null;
     this._toast = null;
+    this._world = null;
+    this._canopies = [];
     this._buildParticles();
     this._randomizeStart();
+  }
+
+  /** Bind world foliage so rain can hit canopies. */
+  bindFoliage(world) {
+    this._world = world;
+    this._canopies = world?.getCanopies?.() || [];
   }
 
   /** Random season + weather each run — no fixed rain → wind → sand pattern. */
@@ -122,9 +130,13 @@ export class Climate {
     this.rain = this._makePoints(1400, 0xc8e4ff, 0.16, 0.85);
     this.sand = this._makePoints(900, 0xd2b48c, 0.12, 0.8);
     this.wind = this._makePoints(480, 0xeef6f0, 0.11, 0.55);
+    // Leaf drips / splashes when rain hits canopies
+    this.drips = this._makePoints(600, 0xd0e8f8, 0.09, 0.8);
+    this._dripLife = new Float32Array(this.drips.count);
     this.scene.add(this.rain.points);
     this.scene.add(this.sand.points);
     this.scene.add(this.wind.points);
+    this.scene.add(this.drips.points);
   }
 
   _makePoints(count, color, size, opacity) {
@@ -218,13 +230,12 @@ export class Climate {
     const oy = (followPos?.y ?? 1.5) + 2;
     const oz = followPos?.z ?? 0;
 
-    this._stepSystem(this.rain, dt, ox, oy, oz, this._rain, {
-      vx: this._wind * 4,
-      vy: -18 - this._rain * 12,
-      vz: this._wind * 2,
-      resetY: 14,
-      span: 32,
-    });
+    if (this._world && !this._canopies.length) {
+      this._canopies = this._world.getCanopies() || [];
+    }
+
+    this._stepRain(dt, ox, oz);
+    this._stepDrips(dt, ox, oz);
     this._stepSystem(this.sand, dt, ox, oy, oz, this._sand, {
       vx: 10 + this._wind * 12,
       vy: -1.2,
@@ -243,6 +254,131 @@ export class Climate {
       horizontal: true,
       span: 34,
     });
+  }
+
+  /** Falling rain that hits tree canopies → splash + leaf drip. */
+  _stepRain(dt, ox, oz) {
+    const sys = this.rain;
+    const intensity = this._rain;
+    const { positions, velocities, count, points, baseOpacity } = sys;
+    if (!points.material.userData.baseSize) {
+      points.material.userData.baseSize = points.material.size;
+    }
+    points.material.opacity = baseOpacity * Math.min(1, intensity * 1.35);
+    points.material.size =
+      points.material.userData.baseSize * (1 + Math.min(0.45, intensity * 0.3));
+    points.visible = intensity > 0.05;
+    if (!points.visible) {
+      if (this.drips) this.drips.points.visible = false;
+      return;
+    }
+    points.position.set(ox, 0, oz);
+    const span = 32;
+    const half = span * 0.5;
+    const vx = this._wind * 4;
+    const vy = -18 - intensity * 12;
+    const vz = this._wind * 2;
+    const canopies = this._canopies;
+    const nCan = canopies.length;
+
+    for (let i = 0; i < count; i++) {
+      const ix = i * 3;
+      positions[ix] += (velocities[ix] + vx) * dt;
+      positions[ix + 1] += (velocities[ix + 1] + vy) * dt;
+      positions[ix + 2] += (velocities[ix + 2] + vz) * dt;
+
+      // World-space hit test against nearby canopies
+      if (nCan && positions[ix + 1] < 12) {
+        const wx = ox + positions[ix];
+        const wy = positions[ix + 1];
+        const wz = oz + positions[ix + 2];
+        for (let c = 0; c < nCan; c++) {
+          const canopy = canopies[c];
+          if (wy > canopy.top || wy < canopy.bot) continue;
+          const dx = wx - canopy.x;
+          const dz = wz - canopy.z;
+          const r = canopy.r;
+          if (dx * dx + dz * dz > r * r) continue;
+          // Hit leaves: spawn edge drip, then drop continues falling off the canopy
+          this._spawnLeafDrip(canopy, ox, oz);
+          const ang = Math.random() * Math.PI * 2;
+          const edge = r * (0.85 + Math.random() * 0.2);
+          positions[ix] = canopy.x - ox + Math.cos(ang) * edge;
+          positions[ix + 2] = canopy.z - oz + Math.sin(ang) * edge;
+          positions[ix + 1] = canopy.bot - 0.15 - Math.random() * 0.35;
+          velocities[ix] = Math.cos(ang) * 2;
+          velocities[ix + 1] = -6 - Math.random() * 5;
+          velocities[ix + 2] = Math.sin(ang) * 2;
+          break;
+        }
+      }
+
+      const out =
+        positions[ix + 1] < 0 ||
+        Math.abs(positions[ix]) > half ||
+        Math.abs(positions[ix + 2]) > half;
+      if (out) {
+        positions[ix] = (Math.random() - 0.5) * span;
+        positions[ix + 1] = 14 * (0.35 + Math.random());
+        positions[ix + 2] = (Math.random() - 0.5) * span;
+        velocities[ix + 1] = -4 - Math.random() * 8;
+      }
+    }
+    points.geometry.attributes.position.needsUpdate = true;
+  }
+
+  _spawnLeafDrip(canopy, ox, oz) {
+    if (!this.drips || Math.random() > 0.55) return;
+    const { positions, velocities, count } = this.drips;
+    // Find a free drip slot
+    let slot = -1;
+    for (let i = 0; i < count; i++) {
+      if (this._dripLife[i] <= 0) {
+        slot = i;
+        break;
+      }
+    }
+    if (slot < 0) slot = (Math.random() * count) | 0;
+    const ix = slot * 3;
+    const ang = Math.random() * Math.PI * 2;
+    const edge = canopy.r * (0.55 + Math.random() * 0.45);
+    positions[ix] = canopy.x - ox + Math.cos(ang) * edge;
+    positions[ix + 1] = canopy.top - 0.05 - Math.random() * 0.25;
+    positions[ix + 2] = canopy.z - oz + Math.sin(ang) * edge;
+    // Slide off the leaf then fall
+    velocities[ix] = Math.cos(ang) * (0.8 + Math.random() * 1.4) + this._wind * 1.5;
+    velocities[ix + 1] = -1.2 - Math.random() * 2.5;
+    velocities[ix + 2] = Math.sin(ang) * (0.8 + Math.random() * 1.4) + this._wind * 0.6;
+    this._dripLife[slot] = 0.55 + Math.random() * 0.9;
+  }
+
+  _stepDrips(dt, ox, oz) {
+    const sys = this.drips;
+    if (!sys) return;
+    const { positions, velocities, count, points, baseOpacity } = sys;
+    const raining = this._rain > 0.08;
+    let alive = 0;
+    points.position.set(ox, 0, oz);
+    for (let i = 0; i < count; i++) {
+      if (this._dripLife[i] <= 0) {
+        positions[i * 3 + 1] = -10;
+        continue;
+      }
+      alive++;
+      this._dripLife[i] -= dt;
+      const ix = i * 3;
+      positions[ix] += velocities[ix] * dt;
+      positions[ix + 1] += velocities[ix + 1] * dt;
+      positions[ix + 2] += velocities[ix + 2] * dt;
+      velocities[ix + 1] -= 14 * dt; // gravity on drip
+      if (positions[ix + 1] < 0 || this._dripLife[i] <= 0) {
+        this._dripLife[i] = 0;
+        positions[ix + 1] = -10;
+      }
+    }
+    points.visible = raining && alive > 0;
+    points.material.opacity = baseOpacity * Math.min(1, this._rain * 1.2);
+    points.geometry.attributes.position.needsUpdate = true;
   }
 
   _stepSystem(sys, dt, ox, oy, oz, intensity, opts) {
