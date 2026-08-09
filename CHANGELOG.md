@@ -1,5 +1,11 @@
 # Changelog
 
+## b019 — 2026-08-09
+
+- Rosto do Albert: cabelo curto (sem “boné”), óculos de lente clara, sem bigode pesado
+- Estação e clima iniciais aleatórios a cada partida (não começa sempre na chuva)
+- Cache `b019`
+
 ## b018 — 2026-08-08
 
 - Câmera 3ª pessoa em órbita: ao olhar para baixo, sobe por cima do personagem para ver os pés (sem atravessar o chão)

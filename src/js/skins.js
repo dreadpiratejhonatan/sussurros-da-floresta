@@ -64,9 +64,16 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   const bootMat = mat(0x1a1816, { roughness: 0.9 });
   const hairMat = mat(0x2a1c14, { roughness: 0.88 });
   const packMat = mat(0x4a4638, { roughness: 0.82 });
-  const glassMat = mat(0x141418, { roughness: 0.35, metalness: 0.45 });
-  // Clear prescription lenses — faint glass so eyes stay visible
-  const lensMat = mat(0xe8f4ff, { roughness: 0.08, metalness: 0.05, transparent: true, opacity: 0.1 });
+  // Thin dark frames; lenses nearly invisible so eyes stay clear
+  const glassMat = mat(0x1a1a1e, { roughness: 0.4, metalness: 0.35 });
+  const lensMat = new THREE.MeshStandardMaterial({
+    color: 0xdcefff,
+    roughness: 0.05,
+    metalness: 0.02,
+    transparent: true,
+    opacity: 0.045,
+    depthWrite: false,
+  });
 
   // hips / jeans waist
   const hips = shadowed(new THREE.Mesh(new THREE.CapsuleGeometry(0.16, 0.12, 4, 10), jeanMat), castShadow);
@@ -185,28 +192,39 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   face.position.set(0, 0.22, 0.155);
   headRoot.add(face);
 
-  const hair = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.175, 14, 12), hairMat), castShadow);
-  hair.position.set(0, 0.32, -0.01);
-  hair.scale.set(1.05, 0.68, 1.1);
+  // Short hair volume — no flat “cap” plate on top
+  const hair = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.168, 14, 12), hairMat), castShadow);
+  hair.position.set(0, 0.3, -0.02);
+  hair.scale.set(1.02, 0.72, 1.05);
   headRoot.add(hair);
-  const fringe = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.06, 0.1), hairMat), castShadow);
-  fringe.position.set(0, 0.36, 0.1);
-  headRoot.add(fringe);
+  for (const [sx, sy, sz, px, py, pz] of [
+    [0.1, 0.05, 0.08, -0.06, 0.34, 0.08],
+    [0.1, 0.05, 0.08, 0.06, 0.34, 0.08],
+    [0.12, 0.045, 0.07, 0, 0.35, 0.1],
+    [0.08, 0.06, 0.07, -0.1, 0.28, 0.05],
+    [0.08, 0.06, 0.07, 0.1, 0.28, 0.05],
+  ]) {
+    const lock = shadowed(new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), hairMat), castShadow);
+    lock.position.set(px, py, pz);
+    lock.scale.set(sx / 0.06, sy / 0.06, sz / 0.06);
+    headRoot.add(lock);
+  }
 
-  // Glasses frame + clear lenses (eyes visible)
-  const bridge = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.018, 0.018), glassMat), castShadow);
-  bridge.position.set(0, 0.24, 0.175);
+  // Thin wire glasses + clear lenses (eyes readable)
+  const bridge = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.012, 0.012), glassMat), castShadow);
+  bridge.position.set(0, 0.235, 0.178);
   headRoot.add(bridge);
   for (const side of [-1, 1]) {
-    const rim = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.07, 0.02), glassMat), castShadow);
-    rim.position.set(side * 0.08, 0.24, 0.175);
+    const rim = shadowed(new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.007, 6, 16), glassMat), castShadow);
+    rim.position.set(side * 0.075, 0.235, 0.176);
+    rim.scale.set(1.05, 0.85, 0.55);
     headRoot.add(rim);
-    const lens = new THREE.Mesh(new THREE.PlaneGeometry(0.08, 0.05), lensMat);
-    lens.position.set(side * 0.08, 0.24, 0.188);
+    const lens = new THREE.Mesh(new THREE.CircleGeometry(0.038, 12), lensMat);
+    lens.position.set(side * 0.075, 0.235, 0.182);
     headRoot.add(lens);
-    const temple = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.014, 0.014), glassMat), castShadow);
-    temple.position.set(side * 0.16, 0.24, 0.1);
-    temple.rotation.y = side * 0.5;
+    const temple = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.01, 0.01), glassMat), castShadow);
+    temple.position.set(side * 0.15, 0.235, 0.1);
+    temple.rotation.y = side * 0.45;
     headRoot.add(temple);
   }
 
