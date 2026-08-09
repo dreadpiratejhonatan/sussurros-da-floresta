@@ -1,4 +1,4 @@
-/** Gera faces/albert.png 256×256 — protagonista (óculos, barba, cabelo escuro). */
+/** Gera faces/albert.png 256×256 — Albert: cabelo curto, óculos de lente clara, rosto limpo. */
 import fs from "node:fs";
 import path from "node:path";
 import zlib from "node:zlib";
@@ -39,53 +39,73 @@ const set = (x, y, r, g, b, a = 255) => {
 const fill = (x0, y0, x1, y1, r, g, b, a = 255) => {
   for (let y = y0; y < y1; y++) for (let x = x0; x < x1; x++) set(x, y, r, g, b, a);
 };
+const ellipse = (cx, cy, rx, ry, r, g, b, a = 255) => {
+  for (let y = Math.floor(cy - ry); y <= Math.ceil(cy + ry); y++) {
+    for (let x = Math.floor(cx - rx); x <= Math.ceil(cx + rx); x++) {
+      const dx = (x - cx) / rx;
+      const dy = (y - cy) / ry;
+      if (dx * dx + dy * dy <= 1) set(x, y, r, g, b, a);
+    }
+  }
+};
 
-// transparent canvas
+const SKIN = [208, 172, 138];
+const HAIR = [40, 28, 20];
+const FRAME = [28, 28, 30];
+
 fill(0, 0, W, H, 0, 0, 0, 0);
+fill(44, 48, 212, 228, ...SKIN);
 
-// light–medium skin (photo reference)
-fill(48, 40, 208, 230, 198, 154, 118);
-
-// short dark wavy hair fringe
-fill(48, 40, 208, 92, 42, 28, 20);
-fill(56, 88, 88, 108, 42, 28, 20);
-fill(168, 88, 200, 108, 42, 28, 20);
+// Short hair with uneven fringe (reads as hair, not a cap)
+fill(44, 40, 212, 76, ...HAIR);
+const fringe = [
+  [50, 72, 94],
+  [70, 98, 88],
+  [96, 124, 84],
+  [122, 150, 86],
+  [148, 178, 90],
+  [172, 206, 96],
+];
+for (const [x0, x1, y1] of fringe) fill(x0, 72, x1, y1, ...HAIR);
+fill(44, 76, 60, 148, ...HAIR);
+fill(196, 76, 212, 148, ...HAIR);
 
 // brows
-fill(72, 108, 118, 120, 48, 32, 24);
-fill(138, 108, 184, 120, 48, 32, 24);
+fill(78, 110, 110, 118, 55, 38, 30);
+fill(146, 110, 178, 118, 55, 38, 30);
 
-// eyes — dark brown
-fill(78, 126, 112, 148, 36, 24, 18);
-fill(144, 126, 178, 148, 36, 24, 18);
-fill(86, 132, 104, 144, 72, 48, 32);
-fill(152, 132, 170, 144, 72, 48, 32);
-// catchlight
-fill(98, 134, 104, 140, 220, 220, 210);
-fill(164, 134, 170, 140, 220, 220, 210);
+// Eyes on skin — small iris/pupil (lenses stay clear: no white/dark fill)
+ellipse(94, 136, 7, 7, 58, 40, 28);
+ellipse(162, 136, 7, 7, 58, 40, 28);
+ellipse(94, 136, 3, 3, 22, 16, 12);
+ellipse(162, 136, 3, 3, 22, 16, 12);
+set(96, 134, 235, 235, 225);
+set(164, 134, 235, 235, 225);
 
-// prescription glasses frame only — lenses stay clear so eyes show
-fill(64, 118, 192, 126, 18, 18, 20); // top rim
-fill(64, 152, 192, 160, 18, 18, 20); // bottom rim
-fill(64, 118, 72, 160, 18, 18, 20); // left
-fill(184, 118, 192, 160, 18, 18, 20); // right
-fill(124, 130, 132, 148, 18, 18, 20); // bridge
-// no lens tint — eyes remain visible through clear glass
+// Thin rectangular frames — interior is untouched skin (true clear lenses)
+const drawRim = (x0, y0, x1, y1, t = 2) => {
+  fill(x0, y0, x1, y0 + t, ...FRAME);
+  fill(x0, y1 - t, x1, y1, ...FRAME);
+  fill(x0, y0, x0 + t, y1, ...FRAME);
+  fill(x1 - t, y0, x1, y1, ...FRAME);
+};
+drawRim(72, 120, 116, 152, 2);
+drawRim(140, 120, 184, 152, 2);
+fill(116, 132, 140, 138, ...FRAME); // bridge
+fill(64, 132, 72, 138, ...FRAME);
+fill(184, 132, 192, 138, ...FRAME);
 
 // nose
-fill(116, 148, 140, 178, 170, 128, 98);
+fill(118, 146, 138, 174, 190, 150, 118);
+fill(122, 170, 134, 178, 175, 135, 105);
 
-// mustache + short beard
-fill(96, 182, 160, 196, 58, 40, 30);
-fill(88, 196, 168, 224, 62, 44, 34);
-fill(72, 200, 96, 222, 62, 44, 34);
-fill(160, 200, 184, 222, 62, 44, 34);
-// mouth line through mustache
-fill(108, 188, 148, 196, 120, 80, 64);
+// Clean-shaven: no mustache / beard — only a soft lip line
+fill(114, 194, 142, 200, 168, 120, 105);
+fill(118, 196, 138, 198, 130, 85, 75);
 
-// ears hint (sides of face plate)
-fill(44, 130, 52, 168, 188, 144, 110);
-fill(204, 130, 212, 168, 188, 144, 110);
+// ears
+fill(40, 128, 50, 168, 200, 160, 128);
+fill(206, 128, 216, 168, 200, 160, 128);
 
 const raw = Buffer.alloc((W * 4 + 1) * H);
 for (let y = 0; y < H; y++) {

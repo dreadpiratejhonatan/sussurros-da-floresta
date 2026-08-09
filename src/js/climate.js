@@ -13,7 +13,7 @@ const SEASONS = {
     ground: 0x3a6a48,
     leaf: 0x4a9a58,
     sunMult: 1.05,
-    weatherWeights: { clear: 0.2, fog: 0.2, rain: 0.4, wind: 0.2, sandstorm: 0 },
+    weatherWeights: { clear: 0.28, fog: 0.22, rain: 0.28, wind: 0.22, sandstorm: 0 },
   },
   verao: {
     id: "verao",
@@ -24,7 +24,7 @@ const SEASONS = {
     ground: 0x4a6a38,
     leaf: 0x5aaa48,
     sunMult: 1.25,
-    weatherWeights: { clear: 0.35, fog: 0.05, rain: 0.2, wind: 0.15, sandstorm: 0.25 },
+    weatherWeights: { clear: 0.3, fog: 0.1, rain: 0.2, wind: 0.2, sandstorm: 0.2 },
   },
   outono: {
     id: "outono",
@@ -35,7 +35,7 @@ const SEASONS = {
     ground: 0x5a4a28,
     leaf: 0xb86a2a,
     sunMult: 0.95,
-    weatherWeights: { clear: 0.15, fog: 0.3, rain: 0.15, wind: 0.35, sandstorm: 0.05 },
+    weatherWeights: { clear: 0.2, fog: 0.25, rain: 0.2, wind: 0.25, sandstorm: 0.1 },
   },
   inverno: {
     id: "inverno",
@@ -46,7 +46,7 @@ const SEASONS = {
     ground: 0x2a3a38,
     leaf: 0x3a5a4a,
     sunMult: 0.75,
-    weatherWeights: { clear: 0.1, fog: 0.4, rain: 0.3, wind: 0.2, sandstorm: 0 },
+    weatherWeights: { clear: 0.2, fog: 0.3, rain: 0.25, wind: 0.25, sandstorm: 0 },
   },
 };
 
@@ -94,11 +94,28 @@ export class Climate {
     this._prevWeather = null;
     this._toast = null;
     this._buildParticles();
-    // Start with readable weather so rain/wind are not "sound only"
-    this.weather = WEATHER.rain;
-    this._rain = 0.85;
-    this._wind = 0.4;
-    this._fog = 0.55;
+    this._randomizeStart();
+  }
+
+  /** Random season + weather each run — no fixed rain → wind → sand pattern. */
+  _randomizeStart() {
+    this.seasonIndex = Math.floor(Math.random() * SEASON_ORDER.length);
+    this.season = SEASONS[SEASON_ORDER[this.seasonIndex]];
+    this.seasonT = Math.random() * this.seasonLen * 0.35;
+    this.weatherLen = 10 + Math.random() * 16;
+    this.weatherT = Math.random() * this.weatherLen * 0.25;
+    this._rollWeather(true);
+    this._snapWeatherIntensities();
+    this._prevSeason = this.season.id;
+    this._prevWeather = this.weather.id;
+  }
+
+  _snapWeatherIntensities() {
+    const night = 1 - this.dayPhase;
+    this._rain = this.weather.rain;
+    this._wind = this.weather.wind + (this.season.id === "outono" ? 0.1 : 0);
+    this._fog = Math.min(1.15, this.weather.fog + night * 0.15);
+    this._sand = this.weather.sand;
   }
 
   _buildParticles() {
@@ -137,19 +154,8 @@ export class Climate {
   }
 
   reset() {
-    this.seasonIndex = 0;
-    this.season = SEASONS.primavera;
-    this.weather = WEATHER.rain;
-    this.seasonT = 0;
-    this.weatherT = 0;
-    this.weatherLen = 12 + Math.random() * 10;
-    this._rain = 0.85;
-    this._wind = 0.4;
-    this._fog = 0.55;
-    this._sand = 0;
-    this._prevSeason = null;
-    this._prevWeather = null;
     this._toast = null;
+    this._randomizeStart();
   }
 
   update(dt, runTime, dayPhase, followPos) {
@@ -197,8 +203,11 @@ export class Climate {
     this.weatherT = 0;
     this.weatherLen = 10 + Math.random() * 14;
     let id = pickWeighted(this.season.weatherWeights);
-    // Avoid instant repeat unless forced season change
-    if (!force && id === this.weather.id && Math.random() < 0.55) {
+    // Prefer a different weather than the current one
+    if (id === this.weather?.id && Math.random() < (force ? 0.85 : 0.7)) {
+      id = pickWeighted(this.season.weatherWeights);
+    }
+    if (!force && id === this.weather?.id && Math.random() < 0.5) {
       id = pickWeighted(this.season.weatherWeights);
     }
     this.weather = WEATHER[id] || WEATHER.clear;
