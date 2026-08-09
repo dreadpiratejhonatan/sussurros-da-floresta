@@ -1,5 +1,10 @@
 # Changelog
 
+## b018 — 2026-08-08
+
+- Câmera 3ª pessoa em órbita: ao olhar para baixo, sobe por cima do personagem para ver os pés (sem atravessar o chão)
+- Cache `b018`
+
 ## b017 — 2026-08-08
 
 - Cabeça/pescoço alinhados com a câmera (não mais invertidos cima/baixo nem esquerda/direita)
