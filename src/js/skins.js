@@ -90,9 +90,9 @@ export function buildAvatar(skinId, { castShadow = true } = {}) {
   coat.position.y = 1.32;
   root.add(coat);
 
-  // navy hood collar (body — does not turn with head)
-  const collar = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.28), navyMat), castShadow);
-  collar.position.y = 1.56;
+  // Jacket collar (low — not a hood/cap on the head)
+  const collar = shadowed(new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.07, 0.26), navyMat), castShadow);
+  collar.position.y = 1.54;
   root.add(collar);
 
   // orange-red zipper
