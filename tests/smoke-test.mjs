@@ -73,6 +73,8 @@ const climateSrc = fs.readFileSync("src/js/climate.js", "utf8");
 assert(climateSrc.includes("sandstorm"), "sandstorm weather");
 assert(climateSrc.includes("primavera"), "spring season");
 assert(climateSrc.includes("rain"), "rain particles");
+assert(climateSrc.includes("bindFoliage"), "climate binds foliage");
+assert(climateSrc.includes("_spawnLeafDrip"), "rain drips from leaves");
 
 const audioSrcFull = fs.readFileSync("src/js/audio.js", "utf8");
 assert(audioSrcFull.includes("setClimate"), "audio setClimate");
@@ -99,5 +101,8 @@ assert(/opacity:\s*0\.0[0-9]/.test(skinsSrc), "clear glasses lenses");
 const worldSrc = fs.readFileSync("src/js/world.js", "utf8");
 assert(worldSrc.includes("_fill"), "fill light for readability");
 assert(worldSrc.includes("0.016"), "lighter fog density");
+assert(worldSrc.includes("canopyRoot"), "tree canopy sway joint");
+assert(worldSrc.includes("_animateFoliage"), "foliage wind/rain animation");
+assert(worldSrc.includes("getCanopies"), "canopy volumes for rain hits");
 
 console.log("SMOKE OK");
