@@ -93,8 +93,8 @@ export class Player {
     const look = input.consumeLook();
     this.yaw -= look.dx * CONFIG.mouseSens;
     this.pitch -= look.dy * CONFIG.mouseSens;
-    // Look up/down — enough down angle to see the forest floor; camera stays above ground
-    this.pitch = Math.max(-1.2, Math.min(0.65, this.pitch));
+    // Look up/down — deep look-down orbits camera overhead to see feet
+    this.pitch = Math.max(-1.45, Math.min(0.72, this.pitch));
 
     this._fwd.set(-Math.sin(this.yaw), 0, -Math.cos(this.yaw));
     this._right.set(Math.cos(this.yaw), 0, -Math.sin(this.yaw));
@@ -159,26 +159,41 @@ export class Player {
       return;
     }
 
-    // Stable third-person follow: camera stays above ground.
-    // Looking up/down is the head + aim point — not burying the camera.
+    // Third-person orbit around the torso: look-down lifts the camera overhead
+    // so Albert's feet are visible, without ever going under the ground.
     const dist = CONFIG.thirdPersonDist;
     const feetY = this.pos.y - CONFIG.eyeHeight;
-    const camY = feetY + 1.9;
+    const pivotY = feetY + 1.35;
+    const pitch = this.pitch;
+    // pitch>0 look up → camera drops; pitch<0 look down → camera rises overhead
+    let horiz = Math.cos(pitch) * dist;
+    // Keep a little horizontal offset so we never flip through the character
+    if (horiz < 0.55) horiz = 0.55;
+    let camY = pivotY - Math.sin(pitch) * dist;
+    const minCamY = feetY + 0.42;
+    if (camY < minCamY) {
+      camY = minCamY;
+      // When clamped to the floor, pull in closer / more overhead
+      const rise = pivotY - camY;
+      const maxHoriz = Math.sqrt(Math.max(0.3, dist * dist - rise * rise));
+      horiz = Math.min(horiz, Math.max(0.55, maxHoriz));
+    }
+
     this.camera.position.set(
-      this.pos.x + Math.sin(this.yaw) * dist,
+      this.pos.x + Math.sin(this.yaw) * horiz,
       camY,
-      this.pos.z + Math.cos(this.yaw) * dist
+      this.pos.z + Math.cos(this.yaw) * horiz
     );
 
-    const aim = 9;
-    const eyeY = feetY + 1.55;
+    // Aim slightly ahead of the pivot; when looking down, aim toward the feet
+    const lookDown = Math.max(0, -pitch);
+    const aimAhead = 2.2 * (1 - lookDown * 0.55);
+    const aimY = THREE.MathUtils.lerp(pivotY, feetY + 0.08, Math.min(1, lookDown / 1.2));
     this._lookTarget.set(
-      this.pos.x - Math.sin(this.yaw) * aim,
-      eyeY + Math.sin(this.pitch) * aim,
-      this.pos.z - Math.cos(this.yaw) * aim
+      this.pos.x - Math.sin(this.yaw) * aimAhead,
+      aimY,
+      this.pos.z - Math.cos(this.yaw) * aimAhead
     );
-    // Allow aiming at the ground in front; never bury the look point deep underground
-    this._lookTarget.y = Math.max(feetY - 2.2, this._lookTarget.y);
     this.camera.lookAt(this._lookTarget);
   }
 }
