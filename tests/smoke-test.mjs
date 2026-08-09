@@ -94,7 +94,7 @@ assert(playerSrc.includes("camY"), "camera stays above ground");
 const skinsSrc = fs.readFileSync("src/js/skins.js", "utf8");
 assert(skinsSrc.includes("headRoot"), "head root joint");
 assert(skinsSrc.includes("setAvatarLook"), "setAvatarLook export");
-assert(skinsSrc.includes("opacity: 0.1"), "clear glasses lenses");
+assert(/opacity:\s*0\.0[0-9]/.test(skinsSrc), "clear glasses lenses");
 
 const worldSrc = fs.readFileSync("src/js/world.js", "utf8");
 assert(worldSrc.includes("_fill"), "fill light for readability");
